@@ -1,0 +1,175 @@
+<script lang="ts">
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+
+	import { SvelteDate } from 'svelte/reactivity';
+
+	let { data } = $props();
+
+	const fmt = (n: number) =>
+		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+
+	const fmtDate = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+	const today = new SvelteDate();
+	const DAYS = 90;
+
+	interface ForecastPoint {
+		date: Date;
+		balance: number;
+		events: { label: string; amount: number; type: 'income' | 'expense' | 'debt' }[];
+	}
+
+	const currentBalance = $derived(
+		data.accounts
+			.filter((a: { include_in_total: boolean }) => a.include_in_total)
+			.reduce((s: number, a: { balance: number }) => s + a.balance, 0)
+	);
+
+	const forecast = $derived(() => {
+		const points: ForecastPoint[] = [];
+		let running = currentBalance;
+
+		for (let i = 0; i <= DAYS; i++) {
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity
+			const d = new Date(today);
+			d.setDate(d.getDate() + i);
+			const dayStr = d.toISOString().slice(0, 10);
+			const events: ForecastPoint['events'] = [];
+
+			for (const e of data.expenses) {
+				if (e.active && e.due_date === dayStr) {
+					events.push({ label: e.name, amount: e.amount, type: 'expense' });
+					running -= e.amount;
+				}
+			}
+			for (const e of data.expenses) {
+				if (e.active && e.recurrence === 'monthly' && !e.due_date && d.getDate() === 1) {
+					events.push({ label: e.name + ' (monthly)', amount: e.amount, type: 'expense' });
+					running -= e.amount;
+				}
+			}
+			for (const inc of data.incomeItems) {
+				if (inc.expected_date === dayStr) {
+					events.push({ label: inc.name, amount: inc.amount, type: 'income' });
+					running += inc.amount;
+				}
+			}
+			for (const inc of data.incomeItems) {
+				if (inc.recurrence === 'monthly' && !inc.expected_date && d.getDate() === 1) {
+					events.push({ label: inc.name + ' (monthly)', amount: inc.amount, type: 'income' });
+					running += inc.amount;
+				}
+			}
+			for (const debt of data.debts) {
+				if (!debt.paid && debt.due_date === dayStr) {
+					const sign = debt.direction === 'owe' ? -1 : 1;
+					events.push({ label: debt.counterparty, amount: debt.amount, type: 'debt' });
+					running += sign * debt.amount;
+				}
+			}
+
+			if (events.length > 0 || i === 0 || i === DAYS) {
+				points.push({ date: d, balance: running, events });
+			}
+		}
+		return points;
+	});
+
+	const minBalance = $derived(Math.min(...forecast().map((p) => p.balance)));
+	const endBalance = $derived(forecast()[forecast().length - 1]?.balance ?? currentBalance);
+</script>
+
+<div class="pb-6">
+	<div class="px-4 pt-4">
+		<PageHeader title="Forecast" subtitle="90-day cashflow" />
+	</div>
+
+	<div class="mx-4 mb-4 grid grid-cols-2 gap-3">
+		<div
+			class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
+		>
+			<p class="text-xs text-[var(--color-neutral)]">Today</p>
+			<p
+				class="mt-0.5 text-sm font-semibold tabular-nums {currentBalance >= 0
+					? 'text-[var(--color-income)]'
+					: 'text-[var(--color-expense)]'}"
+			>
+				{fmt(currentBalance)}
+			</p>
+		</div>
+		<div
+			class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
+		>
+			<p class="text-xs text-[var(--color-neutral)]">In 90 days</p>
+
+			<p
+				class="mt-0.5 text-sm font-semibold tabular-nums {endBalance >= 0
+					? 'text-[var(--color-income)]'
+					: 'text-[var(--color-expense)]'}"
+			>
+				{fmt(endBalance)}
+			</p>
+		</div>
+	</div>
+
+	{#if minBalance < 0}
+		<div
+			class="mx-4 mb-4 rounded-[var(--radius-lg)] border border-[var(--color-expense)]/30 bg-[var(--color-expense)]/5 px-4 py-3"
+		>
+			<p class="text-xs font-medium text-[var(--color-expense)]">
+				⚠️ Balance dips below zero. Lowest: {fmt(minBalance)}
+			</p>
+		</div>
+	{/if}
+
+	<div class="space-y-1 px-4">
+		{#each forecast() as point (point.date.toISOString())}
+			{#if point.events.length > 0}
+				<div
+					class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
+				>
+					<div class="mb-2 flex items-center justify-between">
+						<p class="text-xs font-semibold text-[var(--color-neutral)]">{fmtDate(point.date)}</p>
+						<p
+							class="text-xs font-semibold tabular-nums {point.balance >= 0
+								? 'text-[var(--color-income)]'
+								: 'text-[var(--color-expense)]'}"
+						>
+							{fmt(point.balance)}
+						</p>
+					</div>
+					<ul class="space-y-1">
+						{#each point.events as ev (ev.label + ev.type)}
+							<li class="flex items-center justify-between text-xs">
+								<span>{ev.label}</span>
+								<span
+									class="tabular-nums"
+									style="color: {ev.type === 'income'
+										? 'var(--color-income)'
+										: ev.type === 'expense'
+											? 'var(--color-expense)'
+											: 'var(--color-debt)'};"
+								>
+									{ev.type === 'income' ? '+' : '-'}{fmt(ev.amount)}
+								</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+		{/each}
+
+		{#if forecast().filter((p) => p.events.length > 0).length === 0}
+			<div
+				class="rounded-[var(--radius-xl)] border border-dashed border-[var(--color-border)] p-8 text-center"
+			>
+				<p class="text-sm text-[var(--color-neutral)]">
+					No upcoming cashflow events in the next 90 days.
+				</p>
+				<p class="mt-1 text-xs text-[var(--color-neutral)]">
+					Add expenses, income, or debts with due dates to see your forecast.
+				</p>
+			</div>
+		{/if}
+	</div>
+</div>
