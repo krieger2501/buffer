@@ -1,42 +1,133 @@
-# sv
+# Buffer
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+> Plan your money before it moves.
 
-## Creating a project
+Buffer is a mobile-first personal finance PWA. Track accounts, recurring expenses and income, debts, and get a rolling 90-day cashflow forecast — all backed by a private Supabase database and deployed to Cloudflare Pages.
 
-If you're seeing this, you've probably already done this step. Congrats!
+---
+
+## Features
+
+- **Dashboard** — liquid-asset summary, account balances, upcoming cashflow events
+- **Accounts** — checking, savings, crypto, investment, cash with per-account currency
+- **Expenses** — recurring bills and subscriptions with category and due-date tracking
+- **Income** — recurring income with expected-date and received-flag tracking
+- **Debt** — owe / owed-to-me tracker with settlement status
+- **Forecast** — 90-day forward cashflow projection with balance-dip alerts
+- **PWA** — installable, offline-capable, Workbox service worker with `NetworkOnly` for all data routes
+
+## Tech stack
+
+| Concern    | Tool                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| Framework  | [SvelteKit 2](https://svelte.dev/docs/kit) + [Svelte 5](https://svelte.dev) (runes mode) |
+| Styling    | [Tailwind CSS v4](https://tailwindcss.com) with `@theme` design tokens                   |
+| Components | [shadcn-svelte](https://www.shadcn-svelte.com)                                           |
+| Database   | [Supabase](https://supabase.com) (Postgres)                                              |
+| Migrations | [Drizzle ORM](https://orm.drizzle.team) + `drizzle-kit`                                  |
+| Hosting    | [Cloudflare Pages](https://pages.cloudflare.com)                                         |
+| PWA        | [@vite-pwa/sveltekit](https://vite-pwa-org.netlify.app/frameworks/sveltekit)             |
+
+---
+
+## Prerequisites
+
+| Tool    | Version | Notes                                                                                     |
+| ------- | ------- | ----------------------------------------------------------------------------------------- |
+| Node.js | `>=22`  | Use the version pinned in `.node-version`                                                 |
+| pnpm    | `>=10`  | Enabled via [Corepack](https://nodejs.org/api/corepack.html) — no separate install needed |
+
+Enable Corepack once (ships with Node ≥ 16.9):
 
 ```sh
-# create a new project
-npx sv create my-app
+corepack enable
 ```
 
-To recreate this project with the same configuration:
+---
+
+## Setup
+
+### 1. Clone and install
 
 ```sh
-# recreate this project
-pnpm dlx sv@0.15.2 create --template minimal --types ts --add tailwindcss="plugins:none" prettier eslint --no-download-check --install pnpm .
+git clone https://github.com/krieger2501/buffer.git
+cd buffer
+pnpm install
 ```
 
-## Developing
+### 2. Configure environment variables
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Copy the example file and fill in your Supabase credentials:
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+cp .env.example .env.local
 ```
 
-## Building
+| Variable                          | Where to find it                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `PUBLIC_SUPABASE_URL`             | Supabase → Project Settings → API → Project URL                                          |
+| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase → Project Settings → API → Project API keys → `publishable`                     |
+| `DATABASE_URL`                    | Supabase → Project Settings → Database → Connection string (Transaction mode, port 6543) |
 
-To create a production version of your app:
+### 3. Create the database schema
+
+Generate and apply the initial migration:
 
 ```sh
-npm run build
+pnpm db:generate   # creates SQL files in ./drizzle
+pnpm db:migrate    # applies them to your Supabase project
 ```
 
-You can preview the production build with `npm run preview`.
+> You can inspect the live database at any time with `pnpm db:studio`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+### 4. Start the dev server
+
+```sh
+pnpm dev
+```
+
+App is available at `http://localhost:5173`.
+
+---
+
+## Scripts
+
+| Script             | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `pnpm dev`         | Start development server with HMR                                |
+| `pnpm build`       | Production build (Cloudflare Pages output)                       |
+| `pnpm preview`     | Preview the production build locally                             |
+| `pnpm check`       | Svelte type-check via `svelte-check`                             |
+| `pnpm lint`        | ESLint + Prettier check + `sort-package-json` check              |
+| `pnpm lint:fix`    | Auto-fix all lint and formatting issues                          |
+| `pnpm format`      | Reformat all files with Prettier and sort `package.json`         |
+| `pnpm knip`        | Dead code and unlisted dependency detection                      |
+| `pnpm qc`          | Full quality gate: type-check → lint → knip → build → clean-tree |
+| `pnpm db:generate` | Generate Drizzle migration SQL from schema changes               |
+| `pnpm db:migrate`  | Apply pending migrations to the database                         |
+| `pnpm db:studio`   | Open Drizzle Studio (visual database browser)                    |
+
+---
+
+## Deployment
+
+The app deploys automatically to **Cloudflare Pages** on every push to `main`.
+
+For the first deployment, connect the GitHub repository in the Cloudflare Pages dashboard and set the following environment variables in the Cloudflare dashboard:
+
+- `PUBLIC_SUPABASE_URL`
+- `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+`DATABASE_URL` is only needed locally for running migrations — it is never used at runtime.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+---
+
+## License
+
+MIT
