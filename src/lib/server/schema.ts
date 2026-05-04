@@ -2,6 +2,7 @@ import { pgTable, uuid, text, numeric, boolean, timestamp, date } from 'drizzle-
 
 export const accounts = pgTable('accounts', {
 	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id').notNull(),
 	name: text('name').notNull(),
 	type: text('type').notNull().default('checking'),
 	balance: numeric('balance', { precision: 12, scale: 2 }).notNull().default('0'),
@@ -14,6 +15,7 @@ export const accounts = pgTable('accounts', {
 
 export const expenses = pgTable('expenses', {
 	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id').notNull(),
 	name: text('name').notNull(),
 	category: text('category').notNull().default('other'),
 	amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
@@ -27,6 +29,7 @@ export const expenses = pgTable('expenses', {
 
 export const income = pgTable('income', {
 	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id').notNull(),
 	name: text('name').notNull(),
 	amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
 	recurrence: text('recurrence').notNull().default('monthly'),
@@ -39,6 +42,7 @@ export const income = pgTable('income', {
 
 export const debts = pgTable('debts', {
 	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id').notNull(),
 	direction: text('direction').notNull(),
 	counterparty: text('counterparty').notNull(),
 	amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),

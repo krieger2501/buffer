@@ -67,7 +67,7 @@
 		if (editing) {
 			await supabase.from('debts').update(payload).eq('id', editing.id);
 		} else {
-			await supabase.from('debts').insert(payload);
+			await supabase.from('debts').insert({ ...payload, user_id: data.userId });
 		}
 		showForm = false;
 		await invalidateAll();
@@ -181,8 +181,7 @@
 			<div>
 				<label
 					for="dbt-counterparty"
-					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Person / entity</label
+					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Person / entity</label
 				>
 				<input
 					id="dbt-counterparty"

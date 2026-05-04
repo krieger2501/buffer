@@ -77,7 +77,7 @@
 		if (editing) {
 			await supabase.from('expenses').update(payload).eq('id', editing.id);
 		} else {
-			await supabase.from('expenses').insert(payload);
+			await supabase.from('expenses').insert({ ...payload, user_id: data.userId });
 		}
 		showForm = false;
 		await invalidateAll();
