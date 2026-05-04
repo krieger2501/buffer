@@ -92,28 +92,28 @@ App is available at `http://localhost:5173`.
 
 ## Scripts
 
-| Script                  | Description                                                               |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `pnpm dev`              | Start development server with HMR                                         |
-| `pnpm build`            | Production build (Cloudflare Pages output)                                |
-| `pnpm preview`          | Preview the production build locally                                      |
-| `pnpm type:check`       | Svelte + TypeScript type-check via `svelte-check`                         |
-| `pnpm code:lint`        | ESLint check                                                              |
-| `pnpm code:lint:fix`    | Auto-fix ESLint issues                                                    |
-| `pnpm format`           | Reformat all files with Prettier                                          |
-| `pnpm format:check`     | Check formatting without writing                                          |
-| `pnpm package:check`    | Verify `package.json` key order                                           |
-| `pnpm package:format`   | Sort `package.json` keys                                                  |
-| `pnpm commit:lint`      | Lint commits since the last version tag                                   |
-| `pnpm knip`             | Dead code and unlisted dependency detection                               |
-| `pnpm test:unit`        | Run unit and integration tests (Vitest)                                   |
-| `pnpm test:unit:watch`  | Run Vitest in watch mode                                                  |
-| `pnpm test:e2e`         | Run end-to-end tests (Playwright, headless Chromium)                      |
-| `pnpm test:e2e:ui`      | Open Playwright UI mode                                                   |
-| `pnpm qc`               | Full quality gate — mirrors CI exactly (see below)                        |
-| `pnpm db:generate`      | Generate Drizzle migration SQL from schema changes                        |
-| `pnpm db:migrate`       | Apply pending migrations to the database                                  |
-| `pnpm db:studio`        | Open Drizzle Studio (visual database browser)                             |
+| Script                 | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| `pnpm dev`             | Start development server with HMR                    |
+| `pnpm build`           | Production build (Cloudflare Pages output)           |
+| `pnpm preview`         | Preview the production build locally                 |
+| `pnpm type:check`      | Svelte + TypeScript type-check via `svelte-check`    |
+| `pnpm code:lint`       | ESLint check                                         |
+| `pnpm code:lint:fix`   | Auto-fix ESLint issues                               |
+| `pnpm format`          | Reformat all files with Prettier                     |
+| `pnpm format:check`    | Check formatting without writing                     |
+| `pnpm package:check`   | Verify `package.json` key order                      |
+| `pnpm package:format`  | Sort `package.json` keys                             |
+| `pnpm commit:lint`     | Lint commits since the last version tag              |
+| `pnpm knip`            | Dead code and unlisted dependency detection          |
+| `pnpm test:unit`       | Run unit and integration tests (Vitest)              |
+| `pnpm test:unit:watch` | Run Vitest in watch mode                             |
+| `pnpm test:e2e`        | Run end-to-end tests (Playwright, headless Chromium) |
+| `pnpm test:e2e:ui`     | Open Playwright UI mode                              |
+| `pnpm qc`              | Full quality gate — mirrors CI exactly (see below)   |
+| `pnpm db:generate`     | Generate Drizzle migration SQL from schema changes   |
+| `pnpm db:migrate`      | Apply pending migrations to the database             |
+| `pnpm db:studio`       | Open Drizzle Studio (visual database browser)        |
 
 ### Quality gate
 
