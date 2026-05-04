@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import DebtCard from '$lib/components/debt/DebtCard.svelte';
+	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -165,86 +166,74 @@
 </div>
 
 {#if showForm}
-	<div
-		class="fixed inset-0 z-50 flex flex-col justify-end bg-black/30"
-		role="dialog"
-		aria-modal="true"
-	>
-		<div class="rounded-t-[var(--radius-2xl)] bg-[var(--color-surface)] px-4 pt-5 pb-8">
-			<div class="mb-5 flex items-center justify-between">
-				<h2 class="text-base font-semibold">{editing ? 'Edit Debt' : 'New Debt'}</h2>
-				<button type="button" onclick={() => (showForm = false)} class="text-[var(--color-neutral)]"
-					>✕</button
+	<BottomSheet bind:open={showForm} title={editing ? 'Edit Debt' : 'New Debt'}>
+		<div class="space-y-3">
+			<div>
+				<label
+					for="dbt-direction"
+					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Direction</label
 				>
+				<select id="dbt-direction" bind:value={form.direction} class="input">
+					<option value="owe">I owe them</option>
+					<option value="owed">They owe me</option>
+				</select>
 			</div>
-			<div class="space-y-3">
-				<div>
-					<label
-						for="dbt-direction"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Direction</label
-					>
-					<select id="dbt-direction" bind:value={form.direction} class="input">
-						<option value="owe">I owe them</option>
-						<option value="owed">They owe me</option>
-					</select>
-				</div>
-				<div>
-					<label
-						for="dbt-counterparty"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Person / entity</label
-					>
-					<input
-						id="dbt-counterparty"
-						bind:value={form.counterparty}
-						class="input"
-						placeholder="e.g. Alex"
-					/>
-				</div>
-				<div>
-					<label for="dbt-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Amount</label
-					>
-					<input
-						id="dbt-amount"
-						bind:value={form.amount}
-						type="number"
-						step="0.01"
-						class="input"
-						placeholder="0.00"
-					/>
-				</div>
-				<div>
-					<label for="dbt-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Due date (optional)</label
-					>
-					<input id="dbt-due" bind:value={form.due_date} type="date" class="input" />
-				</div>
-				<div>
-					<label for="dbt-notes" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Notes (optional)</label
-					>
-					<input
-						id="dbt-notes"
-						bind:value={form.notes}
-						class="input"
-						placeholder="e.g. dinner split"
-					/>
-				</div>
-				<label class="flex items-center gap-2 text-sm">
-					<input bind:checked={form.paid} type="checkbox" class="h-4 w-4 rounded" />
-					Settled / paid
-				</label>
+			<div>
+				<label
+					for="dbt-counterparty"
+					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Person / entity</label
+				>
+				<input
+					id="dbt-counterparty"
+					bind:value={form.counterparty}
+					class="input"
+					placeholder="e.g. Alex"
+				/>
 			</div>
-			<button
-				type="submit"
-				onclick={save}
-				class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-debt)] py-3 text-sm font-semibold text-white"
-			>
-				{editing ? 'Save Changes' : 'Create Debt'}
-			</button>
+			<div>
+				<label for="dbt-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Amount</label
+				>
+				<input
+					id="dbt-amount"
+					bind:value={form.amount}
+					type="number"
+					step="0.01"
+					class="input"
+					placeholder="0.00"
+				/>
+			</div>
+			<div>
+				<label for="dbt-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Due date (optional)</label
+				>
+				<input id="dbt-due" bind:value={form.due_date} type="date" class="input" />
+			</div>
+			<div>
+				<label for="dbt-notes" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Notes (optional)</label
+				>
+				<input
+					id="dbt-notes"
+					bind:value={form.notes}
+					class="input"
+					placeholder="e.g. dinner split"
+				/>
+			</div>
+			<label class="flex items-center gap-2 text-sm">
+				<input bind:checked={form.paid} type="checkbox" class="h-4 w-4 rounded" />
+				Settled / paid
+			</label>
 		</div>
-	</div>
+		<button
+			type="submit"
+			onclick={save}
+			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-debt)] py-3 text-sm font-semibold text-white"
+		>
+			{editing ? 'Save Changes' : 'Create Debt'}
+		</button>
+	</BottomSheet>
 {/if}
 
 <style>
