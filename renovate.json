@@ -1,41 +1,41 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    "group:allNonMajor"
-  ],
-  "prConcurrentLimit": 6,
-  "prCreationSidebar": "never",
-  "packageManager": "pnpm",
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 5am on Monday"]
-  },
-  "schedule": ["before 5am on Monday"],
-  "timezone": "Europe/Berlin",
-  "labels": ["dependencies"],
-  "commitMessagePrefix": "chore(deps):",
-  "packageRules": [
-    {
-      "matchDepTypes": ["devDependencies"],
-      "automerge": true,
-      "automergeType": "pr",
-      "automergeStrategy": "squash",
-      "matchUpdateTypes": ["minor", "patch"]
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "groupName": "GitHub Actions",
-      "automerge": true,
-      "automergeType": "pr",
-      "automergeStrategy": "squash"
-    },
-    {
-      "matchPackageNames": ["node"],
-      "matchManagers": ["nvm", "nodenv"],
-      "groupName": "Node.js"
-    }
-  ]
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:recommended",
+		":dependencyDashboard",
+		":semanticCommits",
+		"group:allNonMajor"
+	],
+	"prConcurrentLimit": 6,
+	"prCreationSidebar": "never",
+	"packageManager": "pnpm",
+	"lockFileMaintenance": {
+		"enabled": true,
+		"schedule": ["before 5am on Monday"]
+	},
+	"schedule": ["before 5am on Monday"],
+	"timezone": "Europe/Berlin",
+	"labels": ["dependencies"],
+	"commitMessagePrefix": "chore(deps):",
+	"packageRules": [
+		{
+			"matchDepTypes": ["devDependencies"],
+			"automerge": true,
+			"automergeType": "pr",
+			"automergeStrategy": "squash",
+			"matchUpdateTypes": ["minor", "patch"]
+		},
+		{
+			"matchManagers": ["github-actions"],
+			"groupName": "GitHub Actions",
+			"automerge": true,
+			"automergeType": "pr",
+			"automergeStrategy": "squash"
+		},
+		{
+			"matchPackageNames": ["node"],
+			"matchManagers": ["nvm", "nodenv"],
+			"groupName": "Node.js"
+		}
+	]
 }

@@ -30,13 +30,36 @@ function getUpcoming(
 	return [
 		...expenses
 			.filter((e) => e.due_date && new Date(e.due_date) >= now && new Date(e.due_date) <= in30)
-			.map((e) => ({ id: e.id, label: e.name, amount: e.amount, date: e.due_date!, type: 'expense' as const })),
+			.map((e) => ({
+				id: e.id,
+				label: e.name,
+				amount: e.amount,
+				date: e.due_date!,
+				type: 'expense' as const
+			})),
 		...income
-			.filter((i) => i.expected_date && new Date(i.expected_date) >= now && new Date(i.expected_date) <= in30)
-			.map((i) => ({ id: i.id, label: i.name, amount: i.amount, date: i.expected_date!, type: 'income' as const })),
+			.filter(
+				(i) =>
+					i.expected_date && new Date(i.expected_date) >= now && new Date(i.expected_date) <= in30
+			)
+			.map((i) => ({
+				id: i.id,
+				label: i.name,
+				amount: i.amount,
+				date: i.expected_date!,
+				type: 'income' as const
+			})),
 		...debts
-			.filter((d) => !d.paid && d.due_date && new Date(d.due_date) >= now && new Date(d.due_date) <= in30)
-			.map((d) => ({ id: d.id, label: d.counterparty, amount: d.amount, date: d.due_date!, type: 'debt' as const }))
+			.filter(
+				(d) => !d.paid && d.due_date && new Date(d.due_date) >= now && new Date(d.due_date) <= in30
+			)
+			.map((d) => ({
+				id: d.id,
+				label: d.counterparty,
+				amount: d.amount,
+				date: d.due_date!,
+				type: 'debt' as const
+			}))
 	].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
