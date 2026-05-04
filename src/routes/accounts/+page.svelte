@@ -71,7 +71,7 @@
 		if (editing) {
 			await supabase.from('accounts').update(payload).eq('id', editing.id);
 		} else {
-			await supabase.from('accounts').insert(payload);
+			await supabase.from('accounts').insert({ ...payload, user_id: data.userId });
 		}
 		showForm = false;
 		await invalidateAll();
@@ -143,12 +143,7 @@
 				<label for="acc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
 					>Name</label
 				>
-				<input
-					id="acc-name"
-					bind:value={form.name}
-					class="input"
-					placeholder="e.g. N26 Checking"
-				/>
+				<input id="acc-name" bind:value={form.name} class="input" placeholder="e.g. N26 Checking" />
 			</div>
 			<div class="grid grid-cols-2 gap-3">
 				<div>
@@ -170,9 +165,8 @@
 				</div>
 			</div>
 			<div>
-				<label
-					for="acc-balance"
-					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Balance</label
+				<label for="acc-balance" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Balance</label
 				>
 				<input
 					id="acc-balance"

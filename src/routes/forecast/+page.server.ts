@@ -1,13 +1,12 @@
 import type { PageServerLoad } from './$types';
-import { supabase } from '$lib/supabaseClient';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const [{ data: accounts }, { data: expenses }, { data: incomeItems }, { data: debts }] =
 		await Promise.all([
-			supabase.from('accounts').select('*').order('created_at'),
-			supabase.from('expenses').select('*').order('created_at'),
-			supabase.from('income').select('*').order('created_at'),
-			supabase.from('debts').select('*').order('created_at')
+			locals.supabase.from('accounts').select('*').order('created_at'),
+			locals.supabase.from('expenses').select('*').order('created_at'),
+			locals.supabase.from('income').select('*').order('created_at'),
+			locals.supabase.from('debts').select('*').order('created_at')
 		]);
 	return {
 		accounts: accounts ?? [],

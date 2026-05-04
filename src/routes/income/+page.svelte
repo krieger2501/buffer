@@ -63,7 +63,7 @@
 		if (editing) {
 			await supabase.from('income').update(payload).eq('id', editing.id);
 		} else {
-			await supabase.from('income').insert(payload);
+			await supabase.from('income').insert({ ...payload, user_id: data.userId });
 		}
 		showForm = false;
 		await invalidateAll();
@@ -145,9 +145,8 @@
 			</div>
 			<div class="grid grid-cols-2 gap-3">
 				<div>
-					<label
-						for="inc-amount"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Amount</label
+					<label for="inc-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Amount</label
 					>
 					<input
 						id="inc-amount"
@@ -169,9 +168,7 @@
 				</div>
 			</div>
 			<div>
-				<label
-					for="inc-exp-date"
-					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+				<label for="inc-exp-date" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
 					>Expected date (optional)</label
 				>
 				<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />

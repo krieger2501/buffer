@@ -1,7 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { supabase } from '$lib/supabaseClient';
 
-export const load: PageServerLoad = async () => {
-	const { data } = await supabase.from('accounts').select('*').order('created_at');
-	return { accounts: data ?? [] };
+export const load: PageServerLoad = async ({ locals }) => {
+	const { data } = await locals.supabase.from('accounts').select('*').order('created_at');
+	return { accounts: data ?? [], userId: locals.user!.id };
 };
