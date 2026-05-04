@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import AccountRow from '$lib/components/accounts/AccountRow.svelte';
+	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -136,77 +137,65 @@
 </div>
 
 {#if showForm}
-	<div
-		class="fixed inset-0 z-50 flex flex-col justify-end bg-black/30"
-		role="dialog"
-		aria-modal="true"
-	>
-		<div class="rounded-t-[var(--radius-2xl)] bg-[var(--color-surface)] px-4 pt-5 pb-8">
-			<div class="mb-5 flex items-center justify-between">
-				<h2 class="text-base font-semibold">{editing ? 'Edit Account' : 'New Account'}</h2>
-				<button type="button" onclick={() => (showForm = false)} class="text-[var(--color-neutral)]"
-					>✕</button
+	<BottomSheet bind:open={showForm} title={editing ? 'Edit Account' : 'New Account'}>
+		<div class="space-y-3">
+			<div>
+				<label for="acc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Name</label
 				>
+				<input
+					id="acc-name"
+					bind:value={form.name}
+					class="input"
+					placeholder="e.g. N26 Checking"
+				/>
 			</div>
-			<div class="space-y-3">
+			<div class="grid grid-cols-2 gap-3">
 				<div>
-					<label for="acc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Name</label
+					<label for="acc-type" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Type</label
 					>
-					<input
-						id="acc-name"
-						bind:value={form.name}
-						class="input"
-						placeholder="e.g. N26 Checking"
-					/>
-				</div>
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<label for="acc-type" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-							>Type</label
-						>
-						<select id="acc-type" bind:value={form.type} class="input">
-							{#each accountTypes as t (t)}<option value={t}>{t}</option>{/each}
-						</select>
-					</div>
-					<div>
-						<label
-							for="acc-currency"
-							class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Currency</label
-						>
-						<select id="acc-currency" bind:value={form.currency} class="input">
-							{#each currencies as c (c)}<option value={c}>{c}</option>{/each}
-						</select>
-					</div>
+					<select id="acc-type" bind:value={form.type} class="input">
+						{#each accountTypes as t (t)}<option value={t}>{t}</option>{/each}
+					</select>
 				</div>
 				<div>
 					<label
-						for="acc-balance"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Balance</label
+						for="acc-currency"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Currency</label
 					>
-					<input
-						id="acc-balance"
-						bind:value={form.balance}
-						type="number"
-						step="0.01"
-						class="input"
-						placeholder="0.00"
-					/>
+					<select id="acc-currency" bind:value={form.currency} class="input">
+						{#each currencies as c (c)}<option value={c}>{c}</option>{/each}
+					</select>
 				</div>
-				<label class="flex items-center gap-2 text-sm">
-					<input bind:checked={form.include_in_total} type="checkbox" class="h-4 w-4 rounded" />
-					Include in liquid total
-				</label>
 			</div>
-			<button
-				type="submit"
-				onclick={save}
-				class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-primary-500)] py-3 text-sm font-semibold text-white"
-			>
-				{editing ? 'Save Changes' : 'Create Account'}
-			</button>
+			<div>
+				<label
+					for="acc-balance"
+					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Balance</label
+				>
+				<input
+					id="acc-balance"
+					bind:value={form.balance}
+					type="number"
+					step="0.01"
+					class="input"
+					placeholder="0.00"
+				/>
+			</div>
+			<label class="flex items-center gap-2 text-sm">
+				<input bind:checked={form.include_in_total} type="checkbox" class="h-4 w-4 rounded" />
+				Include in liquid total
+			</label>
 		</div>
-	</div>
+		<button
+			type="submit"
+			onclick={save}
+			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-primary-500)] py-3 text-sm font-semibold text-white"
+		>
+			{editing ? 'Save Changes' : 'Create Account'}
+		</button>
+	</BottomSheet>
 {/if}
 
 <style>

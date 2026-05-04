@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import ExpenseRow from '$lib/components/expenses/ExpenseRow.svelte';
+	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -137,78 +138,66 @@
 </div>
 
 {#if showForm}
-	<div
-		class="fixed inset-0 z-50 flex flex-col justify-end bg-black/30"
-		role="dialog"
-		aria-modal="true"
-	>
-		<div class="rounded-t-[var(--radius-2xl)] bg-[var(--color-surface)] px-4 pt-5 pb-8">
-			<div class="mb-5 flex items-center justify-between">
-				<h2 class="text-base font-semibold">{editing ? 'Edit Expense' : 'New Expense'}</h2>
-				<button type="button" onclick={() => (showForm = false)} class="text-[var(--color-neutral)]"
-					>✕</button
+	<BottomSheet bind:open={showForm} title={editing ? 'Edit Expense' : 'New Expense'}>
+		<div class="space-y-3">
+			<div>
+				<label for="exp-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Name</label
 				>
+				<input id="exp-name" bind:value={form.name} class="input" placeholder="e.g. Netflix" />
 			</div>
-			<div class="space-y-3">
+			<div class="grid grid-cols-2 gap-3">
 				<div>
-					<label for="exp-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Name</label
+					<label
+						for="exp-category"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Category</label
 					>
-					<input id="exp-name" bind:value={form.name} class="input" placeholder="e.g. Netflix" />
-				</div>
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<label
-							for="exp-category"
-							class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Category</label
-						>
-						<select id="exp-category" bind:value={form.category} class="input">
-							{#each categories as c (c)}<option value={c}>{c}</option>{/each}
-						</select>
-					</div>
-					<div>
-						<label
-							for="exp-recurrence"
-							class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Recurrence</label
-						>
-						<select id="exp-recurrence" bind:value={form.recurrence} class="input">
-							{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
-						</select>
-					</div>
+					<select id="exp-category" bind:value={form.category} class="input">
+						{#each categories as c (c)}<option value={c}>{c}</option>{/each}
+					</select>
 				</div>
 				<div>
-					<label for="exp-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Amount</label
+					<label
+						for="exp-recurrence"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Recurrence</label
 					>
-					<input
-						id="exp-amount"
-						bind:value={form.amount}
-						type="number"
-						step="0.01"
-						class="input"
-						placeholder="0.00"
-					/>
+					<select id="exp-recurrence" bind:value={form.recurrence} class="input">
+						{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
+					</select>
 				</div>
-				<div>
-					<label for="exp-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Due date (optional)</label
-					>
-					<input id="exp-due" bind:value={form.due_date} type="date" class="input" />
-				</div>
-				<label class="flex items-center gap-2 text-sm">
-					<input bind:checked={form.active} type="checkbox" class="h-4 w-4 rounded" />
-					Active
-				</label>
 			</div>
-			<button
-				type="submit"
-				onclick={save}
-				class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-expense)] py-3 text-sm font-semibold text-white"
-			>
-				{editing ? 'Save Changes' : 'Create Expense'}
-			</button>
+			<div>
+				<label for="exp-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Amount</label
+				>
+				<input
+					id="exp-amount"
+					bind:value={form.amount}
+					type="number"
+					step="0.01"
+					class="input"
+					placeholder="0.00"
+				/>
+			</div>
+			<div>
+				<label for="exp-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Due date (optional)</label
+				>
+				<input id="exp-due" bind:value={form.due_date} type="date" class="input" />
+			</div>
+			<label class="flex items-center gap-2 text-sm">
+				<input bind:checked={form.active} type="checkbox" class="h-4 w-4 rounded" />
+				Active
+			</label>
 		</div>
-	</div>
+		<button
+			type="submit"
+			onclick={save}
+			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-expense)] py-3 text-sm font-semibold text-white"
+		>
+			{editing ? 'Save Changes' : 'Create Expense'}
+		</button>
+	</BottomSheet>
 {/if}
 
 <style>

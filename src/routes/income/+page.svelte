@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import IncomeRow from '$lib/components/income/IncomeRow.svelte';
+	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -134,72 +135,60 @@
 </div>
 
 {#if showForm}
-	<div
-		class="fixed inset-0 z-50 flex flex-col justify-end bg-black/30"
-		role="dialog"
-		aria-modal="true"
-	>
-		<div class="rounded-t-[var(--radius-2xl)] bg-[var(--color-surface)] px-4 pt-5 pb-8">
-			<div class="mb-5 flex items-center justify-between">
-				<h2 class="text-base font-semibold">{editing ? 'Edit Income' : 'New Income'}</h2>
-				<button type="button" onclick={() => (showForm = false)} class="text-[var(--color-neutral)]"
-					>✕</button
+	<BottomSheet bind:open={showForm} title={editing ? 'Edit Income' : 'New Income'}>
+		<div class="space-y-3">
+			<div>
+				<label for="inc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Name</label
 				>
+				<input id="inc-name" bind:value={form.name} class="input" placeholder="e.g. Salary" />
 			</div>
-			<div class="space-y-3">
+			<div class="grid grid-cols-2 gap-3">
 				<div>
-					<label for="inc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Name</label
+					<label
+						for="inc-amount"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Amount</label
 					>
-					<input id="inc-name" bind:value={form.name} class="input" placeholder="e.g. Salary" />
-				</div>
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<label
-							for="inc-amount"
-							class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Amount</label
-						>
-						<input
-							id="inc-amount"
-							bind:value={form.amount}
-							type="number"
-							step="0.01"
-							class="input"
-							placeholder="0.00"
-						/>
-					</div>
-					<div>
-						<label
-							for="inc-recurrence"
-							class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Recurrence</label
-						>
-						<select id="inc-recurrence" bind:value={form.recurrence} class="input">
-							{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
-						</select>
-					</div>
+					<input
+						id="inc-amount"
+						bind:value={form.amount}
+						type="number"
+						step="0.01"
+						class="input"
+						placeholder="0.00"
+					/>
 				</div>
 				<div>
 					<label
-						for="inc-exp-date"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Expected date (optional)</label
+						for="inc-recurrence"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Recurrence</label
 					>
-					<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />
+					<select id="inc-recurrence" bind:value={form.recurrence} class="input">
+						{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
+					</select>
 				</div>
-				<label class="flex items-center gap-2 text-sm">
-					<input bind:checked={form.received} type="checkbox" class="h-4 w-4 rounded" />
-					Already received
-				</label>
 			</div>
-			<button
-				type="submit"
-				onclick={save}
-				class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-income)] py-3 text-sm font-semibold text-white"
-			>
-				{editing ? 'Save Changes' : 'Create Income'}
-			</button>
+			<div>
+				<label
+					for="inc-exp-date"
+					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					>Expected date (optional)</label
+				>
+				<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />
+			</div>
+			<label class="flex items-center gap-2 text-sm">
+				<input bind:checked={form.received} type="checkbox" class="h-4 w-4 rounded" />
+				Already received
+			</label>
 		</div>
-	</div>
+		<button
+			type="submit"
+			onclick={save}
+			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-income)] py-3 text-sm font-semibold text-white"
+		>
+			{editing ? 'Save Changes' : 'Create Income'}
+		</button>
+	</BottomSheet>
 {/if}
 
 <style>
