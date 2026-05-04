@@ -18,24 +18,28 @@
 		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
 </script>
 
-<div class="rounded-[var(--radius-xl)] bg-[var(--color-primary-500)] p-5 text-white shadow-lg">
-	<p class="text-xs font-medium tracking-widest uppercase opacity-70">Liquid Assets</p>
-	<p class="mt-1 text-4xl font-semibold tracking-tight">{fmt(totalLiquid)}</p>
+<div class="relative overflow-hidden rounded-3xl bg-primary-500 p-6 shadow-xl shadow-primary-500/20">
+	<!-- Decorative circles -->
+	<div class="pointer-events-none absolute -top-8 -right-8 h-40 w-40 rounded-full bg-white/5"></div>
+	<div class="pointer-events-none absolute -bottom-6 -left-4 h-28 w-28 rounded-full bg-white/5"></div>
 
-	<div class="mt-5 flex gap-4 border-t border-white/20 pt-4">
-		<div class="flex-1">
-			<p class="text-[10px] tracking-wider uppercase opacity-70">Monthly In</p>
-			<p class="mt-0.5 text-lg font-medium">{fmt(monthlyIncome)}</p>
+	<p class="text-[11px] font-semibold tracking-widest text-white/60 uppercase">Liquid Assets</p>
+	<p class="mt-1 text-[2.75rem] leading-none font-semibold tracking-tight text-white">
+		{fmt(totalLiquid)}
+	</p>
+
+	<div class="mt-6 grid grid-cols-3 gap-2 border-t border-white/15 pt-5">
+		<div>
+			<p class="text-[10px] font-medium tracking-wider text-white/50 uppercase">Monthly In</p>
+			<p class="mt-1 text-base font-semibold text-white">{fmt(monthlyIncome)}</p>
 		</div>
-		<div class="flex-1">
-			<p class="text-[10px] tracking-wider uppercase opacity-70">Monthly Out</p>
-			<p class="mt-0.5 text-lg font-medium">{fmt(monthlyExpenses)}</p>
+		<div>
+			<p class="text-[10px] font-medium tracking-wider text-white/50 uppercase">Monthly Out</p>
+			<p class="mt-1 text-base font-semibold text-white">{fmt(monthlyExpenses)}</p>
 		</div>
-		<div class="flex-1">
-			<p class="text-[10px] tracking-wider uppercase opacity-70">Net</p>
-			<p
-				class="mt-0.5 text-lg font-medium {netCashflow >= 0 ? 'text-emerald-200' : 'text-red-300'}"
-			>
+		<div>
+			<p class="text-[10px] font-medium tracking-wider text-white/50 uppercase">Net</p>
+			<p class="mt-1 text-base font-semibold {netCashflow >= 0 ? 'text-emerald-300' : 'text-red-300'}">
 				{fmt(netCashflow)}
 			</p>
 		</div>
