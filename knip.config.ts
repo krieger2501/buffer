@@ -19,11 +19,11 @@ const config: KnipConfig = {
 		'@internationalized/date',
 		// Used by shadcn-svelte components (in ignored src/lib/components/ui/**)
 		'bits-ui',
-		'clsx',
-		'tailwind-merge',
 		'tailwind-variants',
 		// Consumed by @tailwindcss/vite at build time, not imported in JS
-		'tailwindcss'
+		'tailwindcss',
+		// Used in test files via @testing-library/svelte (peer of vitest)
+		'@testing-library/svelte'
 	]
 };
 
