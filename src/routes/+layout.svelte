@@ -11,7 +11,7 @@
 
 <main
 	class="mx-auto h-full max-w-md overflow-y-auto"
-	style="padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))"
+	style="padding-bottom: var(--bottom-nav-height)"
 >
 	{@render children()}
 </main>
