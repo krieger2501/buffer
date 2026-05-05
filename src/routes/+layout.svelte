@@ -16,7 +16,7 @@
 {#if !isLoginPage}
 	<BottomNav />
 	{#if data.user}
-		<div class="fixed top-4 right-4 z-40">
+		<div class="fixed top-[calc(env(safe-area-inset-top)+0.75rem)] right-4 z-40">
 			<AccountMenu user={data.user} />
 		</div>
 	{/if}

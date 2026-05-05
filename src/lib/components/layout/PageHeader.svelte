@@ -18,6 +18,6 @@
 		<h1 class="text-2xl font-bold tracking-tight">{title}</h1>
 	</div>
 	{#if actions}
-		<div>{@render actions()}</div>
+		<div class="pr-12">{@render actions()}</div>
 	{/if}
 </header>
