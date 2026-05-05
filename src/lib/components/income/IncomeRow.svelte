@@ -10,7 +10,11 @@
 		expected_date: string | null;
 		received: boolean;
 	};
-	let { income, onEdit }: { income: Income; onEdit?: (i: Income) => void } = $props();
+	let {
+		income,
+		once = false,
+		onEdit
+	}: { income: Income; once?: boolean; onEdit?: (i: Income) => void } = $props();
 
 	const fmt = (n: number) => formatCurrency(n);
 </script>
@@ -18,8 +22,11 @@
 <button
 	type="button"
 	onclick={() => onEdit?.(income)}
-	class="flex w-full items-center gap-3 rounded-lg border border-border
-         bg-surface p-4 text-left shadow-sm transition-colors hover:border-income/30"
+	class="flex w-full items-center gap-3 rounded-lg border bg-surface p-4 text-left shadow-sm transition-colors
+	       {once
+		? 'border-dashed border-border hover:border-income/40'
+		: 'border-border hover:border-income/30'}
+	       {once && income.received ? 'opacity-60' : ''}"
 >
 	<div
 		class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-lg"
@@ -28,14 +35,28 @@
 		{income.received ? '✅' : '⏳'}
 	</div>
 	<div class="min-w-0 flex-1">
-		<p class="truncate text-sm font-medium">{income.name}</p>
+		<p class="truncate text-sm font-medium {once && income.received ? 'line-through' : ''}">
+			{income.name}
+		</p>
 		<p class="text-xs text-neutral capitalize">
-			{income.recurrence}
-			{#if income.expected_date}
-				· due {new Date(income.expected_date).toLocaleDateString('en-GB', {
-					day: 'numeric',
-					month: 'short'
-				})}{/if}
+			{#if once}
+				{#if income.expected_date}
+					due {new Date(income.expected_date).toLocaleDateString('en-GB', {
+						day: 'numeric',
+						month: 'short'
+					})}
+				{:else}
+					one-time
+				{/if}
+				{#if income.received}<span class="text-income"> · received</span>{/if}
+			{:else}
+				{income.recurrence}
+				{#if income.expected_date}
+					· due {new Date(income.expected_date).toLocaleDateString('en-GB', {
+						day: 'numeric',
+						month: 'short'
+					})}{/if}
+			{/if}
 		</p>
 	</div>
 	<div class="flex items-center gap-1">

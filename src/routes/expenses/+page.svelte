@@ -21,7 +21,8 @@
 		day_of_month: '',
 		due_date: '',
 		starting_month: '',
-		active: true
+		active: true,
+		paid: false
 	});
 
 	const categories = [
@@ -62,8 +63,11 @@
 	const needsMonth = $derived(['quarterly', 'half-yearly', 'yearly'].includes(form.recurrence));
 	const isOnce = $derived(form.recurrence === 'once');
 
+	const recurringExpenses = $derived(data.expenses.filter((e: Expense) => e.recurrence !== 'once'));
+	const onceExpenses = $derived(data.expenses.filter((e: Expense) => e.recurrence === 'once'));
+
 	const monthlyTotal = $derived(
-		data.expenses
+		recurringExpenses
 			.filter((e: Expense) => e.active && e.recurrence === 'monthly')
 			.reduce((s: number, e: Expense) => s + e.amount, 0)
 	);
@@ -79,7 +83,8 @@
 			day_of_month: '',
 			due_date: '',
 			starting_month: '',
-			active: true
+			active: true,
+			paid: false
 		};
 		showForm = true;
 	}
@@ -87,6 +92,7 @@
 	function openEdit(expense: Expense) {
 		editing = expense;
 		confirmDelete = false;
+		const once = expense.recurrence === 'once';
 		form = {
 			name: expense.name,
 			category: expense.category,
@@ -95,7 +101,8 @@
 			day_of_month: expense.day_of_month ?? '',
 			due_date: expense.due_date ?? '',
 			starting_month: expense.starting_month ?? '',
-			active: expense.active
+			active: expense.active,
+			paid: once ? !expense.active : false
 		};
 		showForm = true;
 	}
@@ -109,7 +116,7 @@
 			day_of_month: !isOnce ? form.day_of_month || null : null,
 			due_date: isOnce ? form.due_date || null : null,
 			starting_month: needsMonth ? form.starting_month || null : null,
-			active: isOnce ? false : form.active
+			active: isOnce ? !form.paid : form.active
 		};
 		if (editing) {
 			await supabase.from('expenses').update(payload).eq('id', editing.id);
@@ -149,16 +156,29 @@
 		</div>
 	</div>
 
-	<div class="space-y-2 px-4">
-		{#each data.expenses as expense (expense.id)}
-			<ExpenseRow {expense} onEdit={openEdit} />
-		{/each}
-		{#if data.expenses.length === 0}
-			<div class="rounded-xl border border-dashed border-border p-8 text-center">
-				<p class="text-sm text-neutral">No expenses yet. Tap "Add" to create one.</p>
-			</div>
-		{/if}
-	</div>
+	{#if recurringExpenses.length > 0}
+		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">Recurring</p>
+		<div class="mb-4 space-y-2 px-4">
+			{#each recurringExpenses as expense (expense.id)}
+				<ExpenseRow {expense} onEdit={openEdit} />
+			{/each}
+		</div>
+	{/if}
+
+	{#if onceExpenses.length > 0}
+		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">One-time</p>
+		<div class="space-y-2 px-4">
+			{#each onceExpenses as expense (expense.id)}
+				<ExpenseRow {expense} once={true} onEdit={openEdit} />
+			{/each}
+		</div>
+	{/if}
+
+	{#if data.expenses.length === 0}
+		<div class="mx-4 rounded-xl border border-dashed border-border p-8 text-center">
+			<p class="text-sm text-neutral">No expenses yet. Tap "Add" to create one.</p>
+		</div>
+	{/if}
 </div>
 
 {#if showForm}
@@ -226,6 +246,7 @@
 						>
 						<input id="exp-due" bind:value={form.due_date} type="date" class="input" />
 					</div>
+					<Toggle bind:checked={form.paid} label="Paid" id="exp-paid" color="var(--color-income)" />
 				{:else}
 					<div class="grid grid-cols-2 gap-3">
 						<div>

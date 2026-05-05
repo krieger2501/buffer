@@ -52,8 +52,11 @@
 	const needsMonth = $derived(['quarterly', 'half-yearly', 'yearly'].includes(form.recurrence));
 	const isOnce = $derived(form.recurrence === 'once');
 
+	const recurringIncome = $derived(data.incomeItems.filter((i: Income) => i.recurrence !== 'once'));
+	const onceIncome = $derived(data.incomeItems.filter((i: Income) => i.recurrence === 'once'));
+
 	const monthlyTotal = $derived(
-		data.incomeItems
+		recurringIncome
 			.filter((i: Income) => i.recurrence === 'monthly')
 			.reduce((s: number, i: Income) => s + i.amount, 0)
 	);
@@ -149,16 +152,29 @@
 		</div>
 	</div>
 
-	<div class="space-y-2 px-4">
-		{#each data.incomeItems as income (income.id)}
-			<IncomeRow {income} onEdit={openEdit} />
-		{/each}
-		{#if data.incomeItems.length === 0}
-			<div class="rounded-xl border border-dashed border-border p-8 text-center">
-				<p class="text-sm text-neutral">No income tracked yet. Tap "Add" to create one.</p>
-			</div>
-		{/if}
-	</div>
+	{#if recurringIncome.length > 0}
+		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">Recurring</p>
+		<div class="mb-4 space-y-2 px-4">
+			{#each recurringIncome as income (income.id)}
+				<IncomeRow {income} onEdit={openEdit} />
+			{/each}
+		</div>
+	{/if}
+
+	{#if onceIncome.length > 0}
+		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">One-time</p>
+		<div class="space-y-2 px-4">
+			{#each onceIncome as income (income.id)}
+				<IncomeRow {income} once={true} onEdit={openEdit} />
+			{/each}
+		</div>
+	{/if}
+
+	{#if data.incomeItems.length === 0}
+		<div class="mx-4 rounded-xl border border-dashed border-border p-8 text-center">
+			<p class="text-sm text-neutral">No income tracked yet. Tap "Add" to create one.</p>
+		</div>
+	{/if}
 </div>
 
 {#if showForm}
