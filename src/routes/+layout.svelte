@@ -9,7 +9,10 @@
 	const isLoginPage = $derived(page.url.pathname === '/login');
 </script>
 
-<main class="mx-auto min-h-screen max-w-md">
+<main
+	class="mx-auto h-full max-w-md overflow-y-auto"
+	style="padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))"
+>
 	{@render children()}
 </main>
 
@@ -17,7 +20,7 @@
 	<BottomNav />
 	{#if data.user}
 		<div class="fixed top-[calc(env(safe-area-inset-top)+0.75rem)] right-4 z-40">
-			<AccountMenu user={data.user} />
+			<AccountMenu user={data.user} displayName={data.settings.displayName} />
 		</div>
 	{/if}
 {/if}

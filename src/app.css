@@ -97,10 +97,13 @@
 		color: var(--foreground);
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+		height: 100%;
+		overflow: hidden;
 	}
 
 	body {
+		height: 100%;
+		overflow: hidden;
 		padding-top: env(safe-area-inset-top);
-		padding-bottom: var(--bottom-nav-height);
 	}
 }
