@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.4](https://github.com/krieger2501/buffer/compare/v2.1.3...v2.1.4) (2026-05-05)
+
+
+### Bug Fixes
+
+* **pwa:** remove double safe-area-inset-bottom padding below nav ([33c5e9c](https://github.com/krieger2501/buffer/commit/33c5e9c7b1c84ddec1845e7c1bec618b5aed6778))
+* use type assertion to satisfy typescript ([bfeb370](https://github.com/krieger2501/buffer/commit/bfeb370438ec68dd1304f3516faf7fcfc413683c))
+
 ## [2.1.3](https://github.com/krieger2501/buffer/compare/v2.1.2...v2.1.3) (2026-05-05)
 
 
