@@ -12,7 +12,6 @@
 		account
 	}: {
 		account: {
-			id: string;
 			name: string;
 			type: string;
 			balance: number;
