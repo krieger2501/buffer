@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/krieger2501/buffer/compare/v2.1.2...v2.1.3) (2026-05-05)
+
+
+### Bug Fixes
+
+* **pwa:** use 100dvh with box-sizing to prevent footer from being pushed up ([d5abe4d](https://github.com/krieger2501/buffer/commit/d5abe4dc06a565786f314366cefb63195d026b66))
+
 ## [2.1.2](https://github.com/krieger2501/buffer/compare/v2.1.1...v2.1.2) (2026-05-05)
 
 
