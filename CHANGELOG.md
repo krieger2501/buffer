@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/krieger2501/buffer/compare/v2.1.0...v2.1.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **pwa:** offset content and account menu below safe-area-inset-top ([2380706](https://github.com/krieger2501/buffer/commit/23807065b19596d4dbdaf3ab24592d8ea95584e8))
+
 ## [2.1.0](https://github.com/krieger2501/buffer/compare/v2.0.1...v2.1.0) (2026-05-05)
 
 
