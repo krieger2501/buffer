@@ -16,6 +16,7 @@
 		category: 'other',
 		amount: '',
 		recurrence: 'monthly',
+		day_of_month: '',
 		due_date: '',
 		active: true
 	});
@@ -46,6 +47,7 @@
 			category: 'other',
 			amount: '',
 			recurrence: 'monthly',
+			day_of_month: '',
 			due_date: '',
 			active: true
 		};
@@ -59,6 +61,7 @@
 			category: expense.category,
 			amount: String(expense.amount),
 			recurrence: expense.recurrence,
+			day_of_month: expense.day_of_month ?? '',
 			due_date: expense.due_date ?? '',
 			active: expense.active
 		};
@@ -71,7 +74,8 @@
 			category: form.category,
 			amount: parseFloat(form.amount) || 0,
 			recurrence: form.recurrence,
-			due_date: form.due_date || null,
+			day_of_month: form.recurrence !== 'once' ? form.day_of_month || null : null,
+			due_date: form.recurrence === 'once' ? form.due_date || null : null,
 			active: form.active
 		};
 		if (editing) {
@@ -180,10 +184,24 @@
 				/>
 			</div>
 			<div>
-				<label for="exp-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Due date (optional)</label
-				>
-				<input id="exp-due" bind:value={form.due_date} type="date" class="input" />
+				{#if form.recurrence === 'once'}
+					<label for="exp-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Due date (optional)</label
+					>
+					<input id="exp-due" bind:value={form.due_date} type="date" class="input" />
+				{:else}
+					<label for="exp-dom" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Day of month</label
+					>
+					<select id="exp-dom" bind:value={form.day_of_month} class="input">
+						<option value="">— select —</option>
+						{#each Array.from({ length: 28 }, (_, i) => i + 1) as d (d)}
+							<option value={String(d)}>{d}.</option>
+						{/each}
+						<option value="last_working">Last working day</option>
+						<option value="second_last_working">2nd-last working day</option>
+					</select>
+				{/if}
 			</div>
 			<label class="flex items-center gap-2 text-sm">
 				<input bind:checked={form.active} type="checkbox" class="h-4 w-4 rounded" />
