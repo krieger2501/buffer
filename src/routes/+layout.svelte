@@ -9,10 +9,7 @@
 	const isLoginPage = $derived(page.url.pathname === '/login');
 </script>
 
-<main
-	class="mx-auto h-full max-w-md overflow-y-auto"
-	style="padding-bottom: var(--bottom-nav-height)"
->
+<main class="mx-auto min-h-screen max-w-md">
 	{@render children()}
 </main>
 
