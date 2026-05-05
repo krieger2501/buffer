@@ -15,6 +15,7 @@
 		name: '',
 		amount: '',
 		recurrence: 'monthly',
+		day_of_month: '',
 		expected_date: '',
 		received: false
 	});
@@ -36,7 +37,14 @@
 
 	function openNew() {
 		editing = null;
-		form = { name: '', amount: '', recurrence: 'monthly', expected_date: '', received: false };
+		form = {
+			name: '',
+			amount: '',
+			recurrence: 'monthly',
+			day_of_month: '',
+			expected_date: '',
+			received: false
+		};
 		showForm = true;
 	}
 
@@ -46,6 +54,7 @@
 			name: income.name,
 			amount: String(income.amount),
 			recurrence: income.recurrence,
+			day_of_month: income.day_of_month ?? '',
 			expected_date: income.expected_date ?? '',
 			received: income.received
 		};
@@ -57,7 +66,8 @@
 			name: form.name,
 			amount: parseFloat(form.amount) || 0,
 			recurrence: form.recurrence,
-			expected_date: form.expected_date || null,
+			day_of_month: form.recurrence !== 'once' ? form.day_of_month || null : null,
+			expected_date: form.recurrence === 'once' ? form.expected_date || null : null,
 			received: form.received
 		};
 		if (editing) {
@@ -168,10 +178,26 @@
 				</div>
 			</div>
 			<div>
-				<label for="inc-exp-date" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Expected date (optional)</label
-				>
-				<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />
+				{#if form.recurrence === 'once'}
+					<label
+						for="inc-exp-date"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Expected date (optional)</label
+					>
+					<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />
+				{:else}
+					<label for="inc-dom" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Day of month</label
+					>
+					<select id="inc-dom" bind:value={form.day_of_month} class="input">
+						<option value="">— select —</option>
+						{#each Array.from({ length: 28 }, (_, i) => i + 1) as d (d)}
+							<option value={String(d)}>{d}.</option>
+						{/each}
+						<option value="last_working">Last working day</option>
+						<option value="second_last_working">2nd-last working day</option>
+					</select>
+				{/if}
 			</div>
 			<label class="flex items-center gap-2 text-sm">
 				<input bind:checked={form.received} type="checkbox" class="h-4 w-4 rounded" />
@@ -181,7 +207,7 @@
 		<button
 			type="submit"
 			onclick={save}
-			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-income)] py-3 text-sm font-semibold text-white"
+			class="mt-5 w-full rounded-lg bg-income py-3 text-sm font-semibold text-white"
 		>
 			{editing ? 'Save Changes' : 'Create Income'}
 		</button>

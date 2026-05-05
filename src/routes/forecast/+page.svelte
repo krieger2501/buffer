@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import { resolveMonthlyDate, toDateStr } from '$lib/dateUtils';
 
 	import { SvelteDate } from 'svelte/reactivity';
 
@@ -25,46 +26,76 @@
 			.reduce((s: number, a: { balance: number }) => s + a.balance, 0)
 	);
 
+	function firesOnDay(
+		recurrence: string,
+		dayOfMonth: string | null,
+		dueDate: string | null,
+		d: Date,
+		dayStr: string,
+		todayMs: number
+	): boolean {
+		switch (recurrence) {
+			case 'once':
+				return (dueDate ?? null) === dayStr;
+			case 'monthly':
+				if (!dayOfMonth) return false;
+				return toDateStr(resolveMonthlyDate(d.getFullYear(), d.getMonth(), dayOfMonth)) === dayStr;
+			case 'weekly':
+				return (d.getTime() - todayMs) % (7 * 86400000) === 0;
+			case 'biweekly':
+				return (d.getTime() - todayMs) % (14 * 86400000) === 0;
+			case 'quarterly': {
+				if (!dayOfMonth) return false;
+				// fires in the same month-offset every 3 months relative to today
+				const monthDiff =
+					(d.getFullYear() - new Date(todayMs).getFullYear()) * 12 +
+					d.getMonth() -
+					new Date(todayMs).getMonth();
+				if (monthDiff % 3 !== 0) return false;
+				return toDateStr(resolveMonthlyDate(d.getFullYear(), d.getMonth(), dayOfMonth)) === dayStr;
+			}
+			case 'yearly': {
+				if (!dayOfMonth) return false;
+				const origin = new Date(todayMs);
+				if (d.getMonth() !== origin.getMonth()) return false;
+				return toDateStr(resolveMonthlyDate(d.getFullYear(), d.getMonth(), dayOfMonth)) === dayStr;
+			}
+			default:
+				return false;
+		}
+	}
+
 	const forecast = $derived(() => {
 		const points: ForecastPoint[] = [];
 		let running = currentBalance;
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
+		const todayMidnight = new Date(today);
+		todayMidnight.setHours(0, 0, 0, 0);
+		const todayMs = todayMidnight.getTime();
 
 		for (let i = 0; i <= DAYS; i++) {
 			// eslint-disable-next-line svelte/prefer-svelte-reactivity
-			const d = new Date(today);
-			d.setDate(d.getDate() + i);
-			const dayStr = d.toISOString().slice(0, 10);
+			const d = new Date(todayMs + i * 86400000);
+			const dayStr = toDateStr(d);
 			const events: ForecastPoint['events'] = [];
 
 			for (const e of data.expenses) {
-				if (e.active && e.due_date === dayStr) {
-					events.push({ label: e.name, amount: e.amount, type: 'expense' });
-					running -= e.amount;
-				}
-			}
-			for (const e of data.expenses) {
-				if (e.active && e.recurrence === 'monthly' && !e.due_date && d.getDate() === 1) {
-					events.push({ label: e.name + ' (monthly)', amount: e.amount, type: 'expense' });
-					running -= e.amount;
+				if (e.active && firesOnDay(e.recurrence, e.day_of_month, e.due_date, d, dayStr, todayMs)) {
+					events.push({ label: e.name, amount: Number(e.amount), type: 'expense' });
+					running -= Number(e.amount);
 				}
 			}
 			for (const inc of data.incomeItems) {
-				if (inc.expected_date === dayStr) {
-					events.push({ label: inc.name, amount: inc.amount, type: 'income' });
-					running += inc.amount;
-				}
-			}
-			for (const inc of data.incomeItems) {
-				if (inc.recurrence === 'monthly' && !inc.expected_date && d.getDate() === 1) {
-					events.push({ label: inc.name + ' (monthly)', amount: inc.amount, type: 'income' });
-					running += inc.amount;
+				if (firesOnDay(inc.recurrence, inc.day_of_month, inc.expected_date, d, dayStr, todayMs)) {
+					events.push({ label: inc.name, amount: Number(inc.amount), type: 'income' });
+					running += Number(inc.amount);
 				}
 			}
 			for (const debt of data.debts) {
 				if (!debt.paid && debt.due_date === dayStr) {
 					const sign = debt.direction === 'owe' ? -1 : 1;
-					events.push({ label: debt.counterparty, amount: debt.amount, type: 'debt' });
-					running += sign * debt.amount;
+					events.push({ label: debt.counterparty, amount: Number(debt.amount), type: 'debt' });
+					running += sign * Number(debt.amount);
 				}
 			}
 
