@@ -2,22 +2,19 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import BottomNav from '$lib/components/layout/BottomNav.svelte';
-	import AccountMenu from '$lib/components/layout/AccountMenu.svelte';
 
-	let { children, data } = $props();
+	let { children } = $props();
 
 	const isLoginPage = $derived(page.url.pathname === '/login');
 </script>
 
-<main class="mx-auto min-h-screen max-w-md">
+<main
+	class="mx-auto min-h-screen max-w-md"
+	style="padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom))"
+>
 	{@render children()}
 </main>
 
 {#if !isLoginPage}
 	<BottomNav />
-	{#if data.user}
-		<div class="fixed top-[calc(env(safe-area-inset-top)+0.75rem)] right-4 z-40">
-			<AccountMenu user={data.user} displayName={data.settings.displayName} />
-		</div>
-	{/if}
 {/if}

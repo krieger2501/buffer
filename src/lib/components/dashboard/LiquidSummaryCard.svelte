@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { formatCurrency } from '$lib/utils';
+
 	let {
 		accounts,
 		monthlyExpenses,
@@ -14,8 +16,7 @@
 	);
 
 	const netCashflow = $derived(monthlyIncome - monthlyExpenses);
-	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+	const fmt = (n: number) => formatCurrency(n);
 </script>
 
 <div

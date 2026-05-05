@@ -101,6 +101,5 @@
 
 	body {
 		padding-top: env(safe-area-inset-top);
-		padding-bottom: var(--bottom-nav-height);
 	}
 }

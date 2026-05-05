@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ChevronRight, CheckCircle } from 'lucide-svelte';
+	import { formatCurrency } from '$lib/utils';
 
 	type Income = {
 		id: string;
@@ -11,8 +12,7 @@
 	};
 	let { income, onEdit }: { income: Income; onEdit?: (i: Income) => void } = $props();
 
-	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+	const fmt = (n: number) => formatCurrency(n);
 </script>
 
 <button

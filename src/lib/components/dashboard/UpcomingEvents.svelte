@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { UpcomingEvent } from '$lib/types';
 	import { ArrowDownLeft, ArrowUpRight, Users } from 'lucide-svelte';
+	import { formatCurrency } from '$lib/utils';
 
 	let { events }: { events: UpcomingEvent[] } = $props();
 
-	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+	const fmt = (n: number) => formatCurrency(n);
 
 	const fmtDate = (d: string) =>
 		new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });

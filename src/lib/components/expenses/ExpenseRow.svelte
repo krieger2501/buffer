@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ChevronRight } from 'lucide-svelte';
+	import { formatCurrency } from '$lib/utils';
 
 	const CATEGORY_ICONS: Record<string, string> = {
 		housing: '🏠',
@@ -22,8 +23,7 @@
 	};
 	let { expense, onEdit }: { expense: Expense; onEdit?: (e: Expense) => void } = $props();
 
-	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+	const fmt = (n: number) => formatCurrency(n);
 </script>
 
 <button

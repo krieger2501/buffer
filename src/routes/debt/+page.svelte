@@ -2,7 +2,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import DebtCard from '$lib/components/debt/DebtCard.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
-	import { Plus } from 'lucide-svelte';
+	import { Plus, X } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
 
@@ -82,7 +82,7 @@
 
 <div class="pb-6">
 	<div class="px-4 pt-4">
-		<PageHeader title="Debt Tracker">
+		<PageHeader title="Debt Tracker" user={data.user} displayName={data.settings.displayName}>
 			{#snippet actions()}
 				<button
 					type="button"
@@ -127,8 +127,8 @@
 					<button
 						type="button"
 						onclick={() => remove(debt.id)}
-						class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-xs text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
-						aria-label="Delete">✕</button
+						class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
+						aria-label="Delete"><X size={14} /></button
 					>
 				</div>
 			{/each}
@@ -148,8 +148,8 @@
 					<button
 						type="button"
 						onclick={() => remove(debt.id)}
-						class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-xs text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
-						aria-label="Delete">✕</button
+						class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
+						aria-label="Delete"><X size={14} /></button
 					>
 				</div>
 			{/each}

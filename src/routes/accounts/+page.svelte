@@ -86,7 +86,7 @@
 
 <div class="pb-6">
 	<div class="px-4 pt-4">
-		<PageHeader title="Accounts">
+		<PageHeader title="Accounts" user={data.user} displayName={data.settings.displayName}>
 			{#snippet actions()}
 				<button
 					type="button"
