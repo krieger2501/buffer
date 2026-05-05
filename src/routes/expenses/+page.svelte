@@ -101,7 +101,7 @@
 				<button
 					type="button"
 					onclick={openNew}
-					class="flex items-center gap-1 rounded-[var(--radius-md)] bg-[var(--color-expense)] px-3 py-1.5 text-xs font-medium text-white"
+					class="flex items-center gap-1 rounded-md bg-expense px-3 py-1.5 text-xs font-medium text-white"
 				>
 					<Plus size={14} /> Add
 				</button>
@@ -109,13 +109,10 @@
 		</PageHeader>
 	</div>
 
-	<div
-		class="mx-4 mb-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-	>
+	<div class="mx-4 mb-4 rounded-lg border border-border bg-surface px-4 py-3">
 		<div class="flex justify-between text-sm">
-			<span class="text-[var(--color-neutral)]">Monthly total</span>
-			<span class="font-semibold text-[var(--color-expense)] tabular-nums">{fmt(monthlyTotal)}</span
-			>
+			<span class="text-neutral">Monthly total</span>
+			<span class="font-semibold text-expense tabular-nums">{fmt(monthlyTotal)}</span>
 		</div>
 	</div>
 
@@ -126,16 +123,14 @@
 				<button
 					type="button"
 					onclick={() => remove(expense.id)}
-					class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-xs text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
+					class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-xs text-neutral hover:text-expense"
 					aria-label="Delete">✕</button
 				>
 			</div>
 		{/each}
 		{#if data.expenses.length === 0}
-			<div
-				class="rounded-[var(--radius-xl)] border border-dashed border-[var(--color-border)] p-8 text-center"
-			>
-				<p class="text-sm text-[var(--color-neutral)]">No expenses yet. Tap "Add" to create one.</p>
+			<div class="rounded-xl border border-dashed border-border p-8 text-center">
+				<p class="text-sm text-neutral">No expenses yet. Tap "Add" to create one.</p>
 			</div>
 		{/if}
 	</div>
@@ -145,25 +140,21 @@
 	<BottomSheet bind:open={showForm} title={editing ? 'Edit Expense' : 'New Expense'}>
 		<div class="space-y-3">
 			<div>
-				<label for="exp-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Name</label
-				>
+				<label for="exp-name" class="mb-1 block text-xs font-medium text-neutral">Name</label>
 				<input id="exp-name" bind:value={form.name} class="input" placeholder="e.g. Netflix" />
 			</div>
 			<div class="grid grid-cols-2 gap-3">
 				<div>
-					<label
-						for="exp-category"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Category</label
+					<label for="exp-category" class="mb-1 block text-xs font-medium text-neutral"
+						>Category</label
 					>
 					<select id="exp-category" bind:value={form.category} class="input">
 						{#each categories as c (c)}<option value={c}>{c}</option>{/each}
 					</select>
 				</div>
 				<div>
-					<label
-						for="exp-recurrence"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Recurrence</label
+					<label for="exp-recurrence" class="mb-1 block text-xs font-medium text-neutral"
+						>Recurrence</label
 					>
 					<select id="exp-recurrence" bind:value={form.recurrence} class="input">
 						{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
@@ -171,9 +162,7 @@
 				</div>
 			</div>
 			<div>
-				<label for="exp-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Amount</label
-				>
+				<label for="exp-amount" class="mb-1 block text-xs font-medium text-neutral">Amount</label>
 				<input
 					id="exp-amount"
 					bind:value={form.amount}
@@ -185,12 +174,12 @@
 			</div>
 			<div>
 				{#if form.recurrence === 'once'}
-					<label for="exp-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					<label for="exp-due" class="mb-1 block text-xs font-medium text-neutral"
 						>Due date (optional)</label
 					>
 					<input id="exp-due" bind:value={form.due_date} type="date" class="input" />
 				{:else}
-					<label for="exp-dom" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+					<label for="exp-dom" class="mb-1 block text-xs font-medium text-neutral"
 						>Day of month</label
 					>
 					<select id="exp-dom" bind:value={form.day_of_month} class="input">
@@ -211,7 +200,7 @@
 		<button
 			type="submit"
 			onclick={save}
-			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-expense)] py-3 text-sm font-semibold text-white"
+			class="mt-5 w-full rounded-lg bg-expense py-3 text-sm font-semibold text-white"
 		>
 			{editing ? 'Save Changes' : 'Create Expense'}
 		</button>
