@@ -41,4 +41,4 @@ jobs:
         if: steps.release.outputs.pr != ''
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: gh pr merge --rebase --auto "${{ steps.release.outputs.pr }}"
+        run: gh pr merge --rebase --auto "${{ steps.release.outputs.pr_number }}"
