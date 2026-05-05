@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/krieger2501/buffer/compare/v2.0.0...v2.0.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* **ci:** correct Pages output dir to .svelte-kit/cloudflare ([f452ed7](https://github.com/krieger2501/buffer/commit/f452ed7bc341d00ab05d323fe5bbd4eba6027009))
+
 ## [2.0.0](https://github.com/krieger2501/buffer/compare/v1.0.0...v2.0.0) (2026-05-05)
 
 
