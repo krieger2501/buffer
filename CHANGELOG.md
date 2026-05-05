@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.0](https://github.com/krieger2501/buffer/compare/v1.0.0...v2.0.0) (2026-05-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **data:** requires running `pnpm db:migrate` and applying drizzle/rls.sql in the Supabase SQL Editor before existing rows are accessible.
+
+### Features
+
+* **auth:** add Google + Apple OAuth via Supabase SSR ([c909594](https://github.com/krieger2501/buffer/commit/c909594f7d669eb092cc792ae8ca40e58982a2d2))
+* **data:** scope all data to authenticated user ([a74d903](https://github.com/krieger2501/buffer/commit/a74d9039e1ae33f83c7bce9f3c927f7a5677388a))
+* **forecast:** replace due_date with day_of_month for recurring items ([d0b8695](https://github.com/krieger2501/buffer/commit/d0b8695fd792f2fd018f02f91860cd421e5ce43d))
+* initial project setup ([c20cc11](https://github.com/krieger2501/buffer/commit/c20cc1188d68423ad1e3b8280945b0bca99fd87c))
+* **pwa:** fix manifest, generate icons, correct apple-touch-icon ([54ae2ce](https://github.com/krieger2501/buffer/commit/54ae2ceaedcdd08d5355e28e768327c5b4908476))
+
+
+### Bug Fixes
+
+* **db:** add GRANT privileges to rls.sql, fix drizzle.config.ts node types ([8235dc7](https://github.com/krieger2501/buffer/commit/8235dc7738212eca53b1202d787a945e3daeb884))
+* **ui:** extract BottomSheet component, fix nav overlap, slide-up animation ([6882270](https://github.com/krieger2501/buffer/commit/688227084fe6164903af3eaa497d618a9e10a8b1))
+
 ## 1.0.0 (2026-05-05)
 
 
