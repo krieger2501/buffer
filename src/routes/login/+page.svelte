@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
+	import logo from '$lib/assets/logo.webp';
 
 	let { data } = $props();
 
@@ -20,18 +21,9 @@
 			<div
 				class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-500 shadow-lg shadow-primary-500/30"
 			>
-				<svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-					<rect x="4" y="8" width="20" height="13" rx="3" stroke="white" stroke-width="2" />
-					<path
-						d="M9 8V6a5 5 0 0 1 10 0v2"
-						stroke="white"
-						stroke-width="2"
-						stroke-linecap="round"
-					/>
-					<circle cx="14" cy="14.5" r="2" fill="white" />
-				</svg>
+				<img src={logo} alt="Buffer" class="h-9 w-9 object-contain" />
 			</div>
-			<h1 class="text-2xl font-bold tracking-tight">Serene Finance</h1>
+			<h1 class="text-2xl font-bold tracking-tight">Buffer</h1>
 			<p class="mt-1 text-sm text-neutral">Your personal money overview</p>
 		</div>
 
