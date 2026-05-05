@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/krieger2501/buffer/compare/v2.0.1...v2.1.0) (2026-05-05)
+
+
+### Features
+
+* fix PWA nav safe area, add account menu, add settings page ([b9b769f](https://github.com/krieger2501/buffer/commit/b9b769f637b7fcbb849b24fb1dcb170bf7c4ca2d))
+* **settings:** persist settings to user_settings DB table ([bdac64e](https://github.com/krieger2501/buffer/commit/bdac64e1d5841dc45dc9242cfe0aa175b3e24992))
+
+
+### Bug Fixes
+
+* **ci:** consolidate to single release job, move configs to .github/ ([64b150b](https://github.com/krieger2501/buffer/commit/64b150bd703cfb6a0d9f5d3a01b3eb58651af679))
+* **ci:** use pr_number output for alpha auto-merge ([dcc21d6](https://github.com/krieger2501/buffer/commit/dcc21d68d9d39722f7bfad0f74679aef95b28938))
+
 ## [2.0.1](https://github.com/krieger2501/buffer/compare/v2.0.0...v2.0.1) (2026-05-05)
 
 
