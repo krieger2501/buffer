@@ -2,7 +2,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import DebtCard from '$lib/components/debt/DebtCard.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
-	import { Plus, X } from 'lucide-svelte';
+	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
 
@@ -87,7 +87,7 @@
 				<button
 					type="button"
 					onclick={openNew}
-					class="flex items-center gap-1 rounded-[var(--radius-md)] bg-[var(--color-debt)] px-3 py-1.5 text-xs font-medium text-white"
+					class="flex items-center gap-1 rounded-md bg-debt px-3 py-1.5 text-xs font-medium text-white"
 				>
 					<Plus size={14} /> Add
 				</button>
@@ -96,71 +96,41 @@
 	</div>
 
 	<div class="mx-4 mb-4 grid grid-cols-2 gap-3">
-		<div
-			class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-		>
-			<p class="text-xs text-[var(--color-neutral)]">I owe</p>
-			<p class="mt-0.5 text-sm font-semibold text-[var(--color-expense)] tabular-nums">
+		<div class="rounded-lg border border-border bg-surface px-4 py-3">
+			<p class="text-xs text-neutral">I owe</p>
+			<p class="mt-0.5 text-sm font-semibold text-expense tabular-nums">
 				{fmt(totalOwe)}
 			</p>
 		</div>
-		<div
-			class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-		>
-			<p class="text-xs text-[var(--color-neutral)]">Owed to me</p>
-			<p class="mt-0.5 text-sm font-semibold text-[var(--color-income)] tabular-nums">
+		<div class="rounded-lg border border-border bg-surface px-4 py-3">
+			<p class="text-xs text-neutral">Owed to me</p>
+			<p class="mt-0.5 text-sm font-semibold text-income tabular-nums">
 				{fmt(totalOwed)}
 			</p>
 		</div>
 	</div>
 
 	{#if oweDebts.length > 0}
-		<p
-			class="mb-2 px-4 text-xs font-semibold tracking-widest text-[var(--color-neutral)] uppercase"
-		>
-			I Owe
-		</p>
+		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">I Owe</p>
 		<div class="mb-4 space-y-2 px-4">
 			{#each oweDebts as debt (debt.id)}
-				<div class="relative">
-					<DebtCard {debt} onEdit={openEdit} />
-					<button
-						type="button"
-						onclick={() => remove(debt.id)}
-						class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
-						aria-label="Delete"><X size={14} /></button
-					>
-				</div>
+				<DebtCard {debt} onEdit={openEdit} />
 			{/each}
 		</div>
 	{/if}
 
 	{#if owedDebts.length > 0}
-		<p
-			class="mb-2 px-4 text-xs font-semibold tracking-widest text-[var(--color-neutral)] uppercase"
-		>
-			Owed to Me
-		</p>
+		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">Owed to Me</p>
 		<div class="space-y-2 px-4">
 			{#each owedDebts as debt (debt.id)}
-				<div class="relative">
-					<DebtCard {debt} onEdit={openEdit} />
-					<button
-						type="button"
-						onclick={() => remove(debt.id)}
-						class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
-						aria-label="Delete"><X size={14} /></button
-					>
-				</div>
+				<DebtCard {debt} onEdit={openEdit} />
 			{/each}
 		</div>
 	{/if}
 
 	{#if data.debts.length === 0}
-		<div
-			class="mx-4 rounded-[var(--radius-xl)] border border-dashed border-[var(--color-border)] p-8 text-center"
-		>
-			<p class="text-sm text-[var(--color-neutral)]">No debts tracked. Tap "Add" to create one.</p>
+		<div class="mx-4 rounded-xl border border-dashed border-border p-8 text-center">
+			<p class="text-sm text-neutral">No debts tracked. Tap "Add" to create one.</p>
 		</div>
 	{/if}
 </div>
@@ -169,9 +139,8 @@
 	<BottomSheet bind:open={showForm} title={editing ? 'Edit Debt' : 'New Debt'}>
 		<div class="space-y-3">
 			<div>
-				<label
-					for="dbt-direction"
-					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Direction</label
+				<label for="dbt-direction" class="mb-1 block text-xs font-medium text-neutral"
+					>Direction</label
 				>
 				<select id="dbt-direction" bind:value={form.direction} class="input">
 					<option value="owe">I owe them</option>
@@ -179,9 +148,8 @@
 				</select>
 			</div>
 			<div>
-				<label
-					for="dbt-counterparty"
-					class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Person / entity</label
+				<label for="dbt-counterparty" class="mb-1 block text-xs font-medium text-neutral"
+					>Person / entity</label
 				>
 				<input
 					id="dbt-counterparty"
@@ -191,9 +159,7 @@
 				/>
 			</div>
 			<div>
-				<label for="dbt-amount" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Amount</label
-				>
+				<label for="dbt-amount" class="mb-1 block text-xs font-medium text-neutral">Amount</label>
 				<input
 					id="dbt-amount"
 					bind:value={form.amount}
@@ -204,13 +170,13 @@
 				/>
 			</div>
 			<div>
-				<label for="dbt-due" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+				<label for="dbt-due" class="mb-1 block text-xs font-medium text-neutral"
 					>Due date (optional)</label
 				>
 				<input id="dbt-due" bind:value={form.due_date} type="date" class="input" />
 			</div>
 			<div>
-				<label for="dbt-notes" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+				<label for="dbt-notes" class="mb-1 block text-xs font-medium text-neutral"
 					>Notes (optional)</label
 				>
 				<input
@@ -228,10 +194,22 @@
 		<button
 			type="submit"
 			onclick={save}
-			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-debt)] py-3 text-sm font-semibold text-white"
+			class="mt-5 w-full rounded-lg bg-debt py-3 text-sm font-semibold text-white"
 		>
 			{editing ? 'Save Changes' : 'Create Debt'}
 		</button>
+		{#if editing}
+			<button
+				type="button"
+				onclick={() => {
+					showForm = false;
+					remove(editing!.id);
+				}}
+				class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-debt"
+			>
+				Delete Debt
+			</button>
+		{/if}
 	</BottomSheet>
 {/if}
 

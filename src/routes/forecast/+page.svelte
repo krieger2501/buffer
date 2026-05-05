@@ -111,7 +111,12 @@
 
 <div class="pb-6">
 	<div class="px-4 pt-4">
-		<PageHeader title="Forecast" subtitle="90-day cashflow" user={data.user} displayName={data.settings.displayName} />
+		<PageHeader
+			title="Forecast"
+			subtitle="90-day cashflow"
+			user={data.user}
+			displayName={data.settings.displayName}
+		/>
 	</div>
 
 	<div class="mx-4 mb-4 grid grid-cols-2 gap-3">

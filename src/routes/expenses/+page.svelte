@@ -2,7 +2,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import ExpenseRow from '$lib/components/expenses/ExpenseRow.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
-	import { Plus, X } from 'lucide-svelte';
+	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
 
@@ -118,15 +118,7 @@
 
 	<div class="space-y-2 px-4">
 		{#each data.expenses as expense (expense.id)}
-			<div class="relative">
-				<ExpenseRow {expense} onEdit={openEdit} />
-				<button
-					type="button"
-					onclick={() => remove(expense.id)}
-					class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-neutral hover:text-expense"
-					aria-label="Delete"><X size={14} /></button
-				>
-			</div>
+			<ExpenseRow {expense} onEdit={openEdit} />
 		{/each}
 		{#if data.expenses.length === 0}
 			<div class="rounded-xl border border-dashed border-border p-8 text-center">
@@ -204,6 +196,18 @@
 		>
 			{editing ? 'Save Changes' : 'Create Expense'}
 		</button>
+		{#if editing}
+			<button
+				type="button"
+				onclick={() => {
+					showForm = false;
+					remove(editing!.id);
+				}}
+				class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-expense"
+			>
+				Delete Expense
+			</button>
+		{/if}
 	</BottomSheet>
 {/if}
 

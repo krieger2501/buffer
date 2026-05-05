@@ -2,7 +2,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import IncomeRow from '$lib/components/income/IncomeRow.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
-	import { Plus, X } from 'lucide-svelte';
+	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
 
@@ -118,15 +118,7 @@
 
 	<div class="space-y-2 px-4">
 		{#each data.incomeItems as income (income.id)}
-			<div class="relative">
-				<IncomeRow {income} onEdit={openEdit} />
-				<button
-					type="button"
-					onclick={() => remove(income.id)}
-					class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-neutral hover:text-expense"
-					aria-label="Delete"><X size={14} /></button
-				>
-			</div>
+			<IncomeRow {income} onEdit={openEdit} />
 		{/each}
 		{#if data.incomeItems.length === 0}
 			<div class="rounded-xl border border-dashed border-border p-8 text-center">
@@ -196,6 +188,18 @@
 		>
 			{editing ? 'Save Changes' : 'Create Income'}
 		</button>
+		{#if editing}
+			<button
+				type="button"
+				onclick={() => {
+					showForm = false;
+					remove(editing!.id);
+				}}
+				class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-income"
+			>
+				Delete Income
+			</button>
+		{/if}
 	</BottomSheet>
 {/if}
 
