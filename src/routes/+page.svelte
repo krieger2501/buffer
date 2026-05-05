@@ -8,7 +8,7 @@
 </script>
 
 <div class="space-y-4 px-4 pt-4 pb-6">
-	<PageHeader title="Overview" subtitle="Serene Finance" />
+	<PageHeader title="Overview" subtitle="Buffer" />
 
 	<LiquidSummaryCard
 		accounts={data.accounts}
