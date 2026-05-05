@@ -19,6 +19,7 @@ jobs:
         with:
           release-type: node
           target-branch: main
+          config-file: release-please-config.json
           token: ${{ steps.app-token.outputs.token }}
 
   release-alpha:
@@ -26,19 +27,29 @@ jobs:
     if: github.ref == 'refs/heads/alpha'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/create-github-app-token@v3.1.1
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@v3.1.1
         id: app-token
         with:
           client-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      - uses: googleapis/release-please-action@v5.0.0
+      - name: Create Alpha Release PR
+        uses: googleapis/release-please-action@v5.0.0
         id: release
         with:
           release-type: node
           target-branch: alpha
+          config-file: release-please-config.alpha.json
+          versioning-strategy: prerelease
           token: ${{ steps.app-token.outputs.token }}
-      - name: Auto-merge alpha release PR
+      - name: Checkout Code
+        if: steps.release.outputs.pr != ''
+        uses: actions/checkout@v6.0.2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Auto-merge Alpha Release PR
         if: steps.release.outputs.pr != ''
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: gh pr merge --rebase --auto "${{ steps.release.outputs.pr }}"
+        run: |
+          gh pr merge ${{ fromJson(steps.release.outputs.pr).number }} --rebase --auto

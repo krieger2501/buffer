@@ -3,6 +3,9 @@
 	"always-update": true,
 	"include-component-in-tag": false,
 	"release-type": "node",
+	"prerelease": true,
+	"prerelease-type": "alpha",
+	"versioning": "prerelease",
 	"packages": {
 		".": {}
 	},
