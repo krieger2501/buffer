@@ -5,26 +5,8 @@ on:
     branches: [main, alpha]
 
 jobs:
-  release-stable:
-    name: Release (stable)
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/create-github-app-token@v3.1.1
-        id: app-token
-        with:
-          client-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      - uses: googleapis/release-please-action@v5.0.0
-        with:
-          release-type: node
-          target-branch: main
-          config-file: release-please-config.json
-          token: ${{ steps.app-token.outputs.token }}
-
-  release-alpha:
-    name: Release (alpha)
-    if: github.ref == 'refs/heads/alpha'
+  release:
+    name: Release Please
     runs-on: ubuntu-latest
     steps:
       - name: Create GitHub App Token
@@ -33,22 +15,21 @@ jobs:
         with:
           client-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      - name: Create Alpha Release PR
+      - name: Create Release PR
         uses: googleapis/release-please-action@v5.0.0
         id: release
         with:
-          release-type: node
-          target-branch: alpha
-          config-file: release-please-config.alpha.json
-          versioning-strategy: prerelease
+          config-file: .github/release-please-config.${{ github.ref_name }}.json
+          manifest-file: .github/release-please-manifest.json
+          target-branch: ${{ github.ref_name }}
           token: ${{ steps.app-token.outputs.token }}
       - name: Checkout Code
-        if: steps.release.outputs.pr != ''
+        if: steps.release.outputs.pr != '' && github.ref_name == 'alpha'
         uses: actions/checkout@v6.0.2
         with:
           token: ${{ steps.app-token.outputs.token }}
       - name: Auto-merge Alpha Release PR
-        if: steps.release.outputs.pr != ''
+        if: steps.release.outputs.pr != '' && github.ref_name == 'alpha'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
