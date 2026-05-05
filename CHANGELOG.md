@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.5-alpha](https://github.com/krieger2501/buffer/compare/v2.1.4...v2.1.5-alpha) (2026-05-05)
+
+
+### Bug Fixes
+
+* gray box padding on the bottom ([a4821c8](https://github.com/krieger2501/buffer/commit/a4821c8442dab3fce355f9f583ff0a9b1da91458))
+
 ## [2.1.4](https://github.com/krieger2501/buffer/compare/v2.1.3...v2.1.4) (2026-05-05)
 
 
