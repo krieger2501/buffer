@@ -1,12 +1,12 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 
 export default defineConfig({
 	plugins: [
-		tailwindcss(),
-		sveltekit(),
+		tailwindcss() as PluginOption,
+		sveltekit() as PluginOption,
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
 			includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icons/*.png'],
