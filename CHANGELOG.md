@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.2](https://github.com/krieger2501/buffer/compare/v2.1.1...v2.1.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* **pwa:** fix scrolling nav, disable input zoom, wire display name, idempotent rls ([ec184cb](https://github.com/krieger2501/buffer/commit/ec184cbc333510f5fdbc8d7cae6501908ed72f9d))
+
+
+### Documentation
+
+* refresh contributing guide and add PR template ([555665a](https://github.com/krieger2501/buffer/commit/555665a858a9e2b1cd1bac666c7853bdd010cb58))
+
 ## [2.1.1](https://github.com/krieger2501/buffer/compare/v2.1.0...v2.1.1) (2026-05-05)
 
 
