@@ -1,11 +1,12 @@
 -- Run this in Supabase → SQL Editor after applying the Drizzle migration.
--- Enables RLS and creates per-user policies on all four tables.
+-- Enables RLS and creates per-user policies on all five tables.
 
 -- ── grant table-level privileges to Supabase roles ───────────────────────────
-GRANT ALL ON accounts TO authenticated, service_role;
-GRANT ALL ON expenses TO authenticated, service_role;
-GRANT ALL ON income   TO authenticated, service_role;
-GRANT ALL ON debts    TO authenticated, service_role;
+GRANT ALL ON accounts      TO authenticated, service_role;
+GRANT ALL ON expenses      TO authenticated, service_role;
+GRANT ALL ON income        TO authenticated, service_role;
+GRANT ALL ON debts         TO authenticated, service_role;
+GRANT ALL ON user_settings TO authenticated, service_role;
 
 -- ── accounts ─────────────────────────────────────────────────────────────────
 ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
@@ -39,6 +40,15 @@ ALTER TABLE debts ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "debts: own rows only"
   ON debts FOR ALL
+  TO authenticated
+  USING  (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- ── user_settings ─────────────────────────────────────────────────────────────
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "user_settings: own row only"
+  ON user_settings FOR ALL
   TO authenticated
   USING  (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());

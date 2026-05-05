@@ -54,7 +54,16 @@ export const debts = pgTable('debts', {
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 
+export const userSettings = pgTable('user_settings', {
+	userId: uuid('user_id').primaryKey(),
+	displayName: text('display_name'),
+	currency: text('currency').notNull().default('EUR'),
+	weekStartDay: text('week_start_day').notNull().default('monday'),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+});
+
 export type Account = typeof accounts.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
 export type Income = typeof income.$inferSelect;
 export type Debt = typeof debts.$inferSelect;
+export type UserSettings = typeof userSettings.$inferSelect;
