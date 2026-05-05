@@ -5,12 +5,12 @@
 	import { Settings, LogOut } from 'lucide-svelte';
 	import type { User } from '@supabase/supabase-js';
 
-	let { user }: { user: User } = $props();
+	let { user, displayName = null }: { user: User; displayName?: string | null } = $props();
 
 	let open = $state(false);
 
 	const name = $derived(
-		user.user_metadata?.display_name ||
+		displayName ||
 			user.user_metadata?.full_name ||
 			user.user_metadata?.name ||
 			user.email?.split('@')[0] ||
