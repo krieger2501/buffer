@@ -74,7 +74,6 @@
 		const todayMs = todayMidnight.getTime();
 
 		for (let i = 0; i <= DAYS; i++) {
-			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const d = new Date(todayMs + i * 86400000);
 			const dayStr = toDateStr(d);
 			const events: ForecastPoint['events'] = [];
@@ -116,27 +115,23 @@
 	</div>
 
 	<div class="mx-4 mb-4 grid grid-cols-2 gap-3">
-		<div
-			class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-		>
-			<p class="text-xs text-[var(--color-neutral)]">Today</p>
+		<div class="rounded-lg border border-border bg-surface px-4 py-3">
+			<p class="text-xs text-neutral">Today</p>
 			<p
 				class="mt-0.5 text-sm font-semibold tabular-nums {currentBalance >= 0
-					? 'text-[var(--color-income)]'
-					: 'text-[var(--color-expense)]'}"
+					? 'text-income'
+					: 'text-expense'}"
 			>
 				{fmt(currentBalance)}
 			</p>
 		</div>
-		<div
-			class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
-		>
-			<p class="text-xs text-[var(--color-neutral)]">In 90 days</p>
+		<div class="rounded-lg border border-border bg-surface px-4 py-3">
+			<p class="text-xs text-neutral">In 90 days</p>
 
 			<p
 				class="mt-0.5 text-sm font-semibold tabular-nums {endBalance >= 0
-					? 'text-[var(--color-income)]'
-					: 'text-[var(--color-expense)]'}"
+					? 'text-income'
+					: 'text-expense'}"
 			>
 				{fmt(endBalance)}
 			</p>
@@ -144,10 +139,8 @@
 	</div>
 
 	{#if minBalance < 0}
-		<div
-			class="mx-4 mb-4 rounded-[var(--radius-lg)] border border-[var(--color-expense)]/30 bg-[var(--color-expense)]/5 px-4 py-3"
-		>
-			<p class="text-xs font-medium text-[var(--color-expense)]">
+		<div class="mx-4 mb-4 rounded-lg border border-expense/30 bg-expense/5 px-4 py-3">
+			<p class="text-xs font-medium text-expense">
 				⚠️ Balance dips below zero. Lowest: {fmt(minBalance)}
 			</p>
 		</div>
@@ -156,15 +149,13 @@
 	<div class="space-y-1 px-4">
 		{#each forecast() as point (point.date.toISOString())}
 			{#if point.events.length > 0}
-				<div
-					class="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-3"
-				>
+				<div class="rounded-lg border border-border bg-surface p-3">
 					<div class="mb-2 flex items-center justify-between">
-						<p class="text-xs font-semibold text-[var(--color-neutral)]">{fmtDate(point.date)}</p>
+						<p class="text-xs font-semibold text-neutral">{fmtDate(point.date)}</p>
 						<p
 							class="text-xs font-semibold tabular-nums {point.balance >= 0
-								? 'text-[var(--color-income)]'
-								: 'text-[var(--color-expense)]'}"
+								? 'text-income'
+								: 'text-expense'}"
 						>
 							{fmt(point.balance)}
 						</p>
@@ -191,13 +182,9 @@
 		{/each}
 
 		{#if forecast().filter((p) => p.events.length > 0).length === 0}
-			<div
-				class="rounded-[var(--radius-xl)] border border-dashed border-[var(--color-border)] p-8 text-center"
-			>
-				<p class="text-sm text-[var(--color-neutral)]">
-					No upcoming cashflow events in the next 90 days.
-				</p>
-				<p class="mt-1 text-xs text-[var(--color-neutral)]">
+			<div class="rounded-xl border border-dashed border-border p-8 text-center">
+				<p class="text-sm text-neutral">No upcoming cashflow events in the next 90 days.</p>
+				<p class="mt-1 text-xs text-neutral">
 					Add expenses, income, or debts with due dates to see your forecast.
 				</p>
 			</div>

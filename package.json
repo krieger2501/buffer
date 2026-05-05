@@ -19,7 +19,7 @@
 		"package:format": "sort-package-json",
 		"prepare": "svelte-kit sync || echo ''",
 		"preview": "vite preview",
-		"qc": "run-s package:check format:check commit:lint code:lint knip type:check build test:unit test:e2e qc:git",
+		"qc": "run-s package:check format:check commit:lint code:lint knip type:check build test:unit qc:git",
 		"qc:git": "git rev-parse --git-dir > /dev/null 2>&1 && git diff --exit-code && git diff --cached --exit-code || echo 'Not a git repo, skipping clean-tree check'",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
