@@ -34,7 +34,7 @@ Buffer is a mobile-first personal finance PWA. Track accounts, recurring expense
 
 | Tool    | Version | Notes                                                                                     |
 | ------- | ------- | ----------------------------------------------------------------------------------------- |
-| Node.js | `>=22`  | Use the version pinned in `.node-version`                                                 |
+| Node.js | `>=24`  | Use the version pinned in `.node-version`                                                 |
 | pnpm    | `>=10`  | Enabled via [Corepack](https://nodejs.org/api/corepack.html) — no separate install needed |
 
 Enable Corepack once (ships with Node ≥ 16.9):
@@ -129,9 +129,9 @@ If it passes locally it will pass in CI.
 
 ## Deployment
 
-The app deploys automatically to **Cloudflare Pages** on every push to `main`.
+The app deploys automatically to **Cloudflare Pages** when a version tag is pushed (triggered by merging a Release Please PR).
 
-For the first deployment, connect the GitHub repository in the Cloudflare Pages dashboard and set the following environment variables in the Cloudflare dashboard:
+For the first deployment, connect the GitHub repository in the Cloudflare Pages dashboard and set the following environment variables:
 
 - `PUBLIC_SUPABASE_URL`
 - `PUBLIC_SUPABASE_PUBLISHABLE_KEY`

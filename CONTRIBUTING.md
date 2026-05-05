@@ -13,25 +13,19 @@ Follow the [Setup guide in README.md](./README.md#setup) to get the project runn
 ## Branching model
 
 ```
-feature/my-thing ──► main (staging) ──► release (production)
-                          │                      │
-                   auto-deploys to         auto-deploys to
-                   Cloudflare Pages        Cloudflare Pages
-                     (staging)              (production)
+feature/my-thing ──► main (staging)
 ```
 
-| Branch                  | Purpose                                 | Who writes to it          |
-| ----------------------- | --------------------------------------- | ------------------------- |
-| `main`                  | Staging — every merged PR deploys here  | PRs from feature branches |
-| `release`               | Production — versioned, tagged releases | Release Please PRs only   |
-| `feat/*`, `fix/*`, etc. | Feature/fix work                        | You                       |
+| Branch                  | Purpose                                | Who writes to it          |
+| ----------------------- | -------------------------------------- | ------------------------- |
+| `main`                  | Staging — every merged PR deploys here | PRs from feature branches |
+| `feat/*`, `fix/*`, etc. | Feature/fix work                       | You                       |
 
 **Rules:**
 
 - All PRs target `main`.
-- Never push directly to `main` or `release`.
-- The `release` branch only receives merges from Release Please's automated release PRs (`chore: release vX.Y.Z`). These PRs are opened automatically after each merge to `main` that contains releasable commits.
-- Merging the Release Please PR deploys to production and creates a GitHub Release + git tag.
+- Never push directly to `main`.
+- Release Please opens a release PR on `main` after every merge containing releasable commits. Merging it bumps the version, creates a tag, and triggers a Cloudflare Pages deploy.
 
 ---
 
@@ -43,10 +37,10 @@ feature/my-thing ──► main (staging) ──► release (production)
    ```
 2. Make your changes, commit using [Conventional Commits](#commit-messages).
 3. Push and open a PR against `main`.
-4. All CI checks must pass (type-check, lint, knip, build).
-5. Rebase and merge — the only merge strategy accepted.
-6. Release Please detects releasable commits on `main` and opens or updates a `chore: release vX.Y.Z` PR targeting `release`.
-7. When ready to ship to production, merge the release PR.
+4. All CI checks must pass.
+5. Rebase and merge.
+6. Release Please detects releasable commits and opens or updates a `chore: release vX.Y.Z` PR.
+7. Merge the release PR when ready to ship — this tags the release and triggers deployment.
 
 ---
 
@@ -56,7 +50,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 **Format:**
 
-```
+```text
 <type>(<optional scope>): <short description>
 
 [optional body]
@@ -97,7 +91,7 @@ feat!: replace Supabase with self-hosted Postgres
 All style is enforced automatically — just run the auto-fixer before committing:
 
 ```sh
-pnpm lint:fix
+pnpm code:lint:fix
 ```
 
 Key rules:
@@ -118,7 +112,7 @@ Before opening a PR, run the full quality gate locally:
 pnpm qc
 ```
 
-This runs: `svelte-check` → ESLint + Prettier + sort-package-json → Knip → build → clean working tree.
+This runs: `package:check` → `format:check` → `commit:lint` → `code:lint` → `knip` → `type:check` → `build` → `test:unit` → `test:e2e` → clean working tree.
 
 ---
 
