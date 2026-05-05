@@ -1,7 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
 	"release-type": "node",
-	"target-branch": "release",
 	"changelog-sections": [
 		{ "type": "feat", "section": "Features" },
 		{ "type": "fix", "section": "Bug Fixes" },
@@ -13,5 +12,15 @@
 		{ "type": "style", "section": "Miscellaneous", "hidden": true },
 		{ "type": "ci", "section": "Miscellaneous", "hidden": true }
 	],
-	"pull-request-title-pattern": "chore: release ${version}"
+	"pull-request-title-pattern": "chore: release ${version}",
+	"branches": [
+		{
+			"branch": "main"
+		},
+		{
+			"branch": "alpha",
+			"prerelease": true,
+			"prerelease-type": "alpha"
+		}
+	]
 }
