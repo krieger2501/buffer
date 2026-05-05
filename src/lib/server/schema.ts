@@ -24,6 +24,7 @@ export const expenses = pgTable('expenses', {
 	dueDate: date('due_date'),
 	accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
 	notes: text('notes'),
+	startingMonth: text('starting_month'),
 	active: boolean('active').notNull().default(true),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
@@ -39,6 +40,7 @@ export const income = pgTable('income', {
 	received: boolean('received').notNull().default(false),
 	accountId: uuid('account_id').references(() => accounts.id, { onDelete: 'set null' }),
 	notes: text('notes'),
+	startingMonth: text('starting_month'),
 	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 

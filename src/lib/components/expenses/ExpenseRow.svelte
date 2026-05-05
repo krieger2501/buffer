@@ -29,27 +29,27 @@
 <button
 	type="button"
 	onclick={() => onEdit?.(expense)}
-	class="flex w-full items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)]
-         bg-[var(--color-surface)] p-4 text-left shadow-sm transition-colors hover:border-[var(--color-expense)]/30
+	class="flex w-full items-center gap-3 rounded-lg border border-border
+         bg-surface p-4 text-left shadow-sm transition-colors hover:border-expense/30
          {!expense.active ? 'opacity-50' : ''}"
 >
 	<div
-		class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-lg"
+		class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-lg"
 		style="background-color: var(--color-expense)18;"
 	>
 		{CATEGORY_ICONS[expense.category] ?? '📌'}
 	</div>
 	<div class="min-w-0 flex-1">
 		<p class="truncate text-sm font-medium">{expense.name}</p>
-		<p class="text-xs text-[var(--color-neutral)] capitalize">
+		<p class="text-xs text-neutral capitalize">
 			{expense.category} · {expense.recurrence}
 			{#if !expense.active}<span> · paused</span>{/if}
 		</p>
 	</div>
 	<div class="flex items-center gap-1">
-		<p class="text-sm font-semibold text-[var(--color-expense)] tabular-nums">
+		<p class="text-sm font-semibold text-expense tabular-nums">
 			{fmt(expense.amount)}
 		</p>
-		<ChevronRight size={14} class="text-[var(--color-neutral)]" />
+		<ChevronRight size={14} class="text-neutral" />
 	</div>
 </button>

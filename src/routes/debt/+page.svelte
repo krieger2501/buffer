@@ -2,6 +2,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import DebtCard from '$lib/components/debt/DebtCard.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -11,6 +12,7 @@
 
 	let showForm = $state(false);
 	let editing = $state<Debt | null>(null);
+	let confirmDelete = $state(false);
 	let form = $state({
 		direction: 'owe',
 		counterparty: '',
@@ -21,7 +23,7 @@
 	});
 
 	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+		new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 
 	const totalOwe = $derived(
 		data.debts
@@ -38,12 +40,14 @@
 
 	function openNew() {
 		editing = null;
+		confirmDelete = false;
 		form = { direction: 'owe', counterparty: '', amount: '', due_date: '', paid: false, notes: '' };
 		showForm = true;
 	}
 
 	function openEdit(debt: Debt) {
 		editing = debt;
+		confirmDelete = false;
 		form = {
 			direction: debt.direction,
 			counterparty: debt.counterparty,
@@ -73,9 +77,9 @@
 		await invalidateAll();
 	}
 
-	async function remove(id: string) {
-		if (!confirm('Delete this debt?')) return;
-		await supabase.from('debts').delete().eq('id', id);
+	async function remove() {
+		await supabase.from('debts').delete().eq('id', editing!.id);
+		showForm = false;
 		await invalidateAll();
 	}
 </script>
@@ -137,78 +141,100 @@
 
 {#if showForm}
 	<BottomSheet bind:open={showForm} title={editing ? 'Edit Debt' : 'New Debt'}>
-		<div class="space-y-3">
-			<div>
-				<label for="dbt-direction" class="mb-1 block text-xs font-medium text-neutral"
-					>Direction</label
+		{#if confirmDelete}
+			<div class="space-y-4 py-2">
+				<div class="rounded-xl bg-surface-muted px-4 py-4 text-center">
+					<p class="text-sm font-medium">Delete debt with "{editing?.counterparty}"?</p>
+					<p class="mt-1 text-xs text-neutral">This can't be undone.</p>
+				</div>
+				<button
+					type="button"
+					onclick={remove}
+					class="w-full rounded-lg bg-debt py-3 text-sm font-semibold text-white"
 				>
-				<select id="dbt-direction" bind:value={form.direction} class="input">
-					<option value="owe">I owe them</option>
-					<option value="owed">They owe me</option>
-				</select>
+					Yes, delete
+				</button>
+				<button
+					type="button"
+					onclick={() => (confirmDelete = false)}
+					class="w-full rounded-lg py-3 text-sm font-semibold text-neutral"
+				>
+					Cancel
+				</button>
 			</div>
-			<div>
-				<label for="dbt-counterparty" class="mb-1 block text-xs font-medium text-neutral"
-					>Person / entity</label
-				>
-				<input
-					id="dbt-counterparty"
-					bind:value={form.counterparty}
-					class="input"
-					placeholder="e.g. Alex"
+		{:else}
+			<div class="space-y-3">
+				<div>
+					<label for="dbt-direction" class="mb-1 block text-xs font-medium text-neutral"
+						>Direction</label
+					>
+					<select id="dbt-direction" bind:value={form.direction} class="input">
+						<option value="owe">I owe them</option>
+						<option value="owed">They owe me</option>
+					</select>
+				</div>
+				<div>
+					<label for="dbt-counterparty" class="mb-1 block text-xs font-medium text-neutral"
+						>Person / entity</label
+					>
+					<input
+						id="dbt-counterparty"
+						bind:value={form.counterparty}
+						class="input"
+						placeholder="e.g. Alex"
+					/>
+				</div>
+				<div>
+					<label for="dbt-amount" class="mb-1 block text-xs font-medium text-neutral">Amount</label>
+					<input
+						id="dbt-amount"
+						bind:value={form.amount}
+						type="number"
+						step="0.01"
+						class="input"
+						placeholder="0.00"
+					/>
+				</div>
+				<div>
+					<label for="dbt-due" class="mb-1 block text-xs font-medium text-neutral"
+						>Due date (optional)</label
+					>
+					<input id="dbt-due" bind:value={form.due_date} type="date" class="input" />
+				</div>
+				<div>
+					<label for="dbt-notes" class="mb-1 block text-xs font-medium text-neutral"
+						>Notes (optional)</label
+					>
+					<input
+						id="dbt-notes"
+						bind:value={form.notes}
+						class="input"
+						placeholder="e.g. dinner split"
+					/>
+				</div>
+				<Toggle
+					bind:checked={form.paid}
+					label="Settled / paid"
+					id="dbt-paid"
+					color="var(--color-income)"
 				/>
 			</div>
-			<div>
-				<label for="dbt-amount" class="mb-1 block text-xs font-medium text-neutral">Amount</label>
-				<input
-					id="dbt-amount"
-					bind:value={form.amount}
-					type="number"
-					step="0.01"
-					class="input"
-					placeholder="0.00"
-				/>
-			</div>
-			<div>
-				<label for="dbt-due" class="mb-1 block text-xs font-medium text-neutral"
-					>Due date (optional)</label
-				>
-				<input id="dbt-due" bind:value={form.due_date} type="date" class="input" />
-			</div>
-			<div>
-				<label for="dbt-notes" class="mb-1 block text-xs font-medium text-neutral"
-					>Notes (optional)</label
-				>
-				<input
-					id="dbt-notes"
-					bind:value={form.notes}
-					class="input"
-					placeholder="e.g. dinner split"
-				/>
-			</div>
-			<label class="flex items-center gap-2 text-sm">
-				<input bind:checked={form.paid} type="checkbox" class="h-4 w-4 rounded" />
-				Settled / paid
-			</label>
-		</div>
-		<button
-			type="submit"
-			onclick={save}
-			class="mt-5 w-full rounded-lg bg-debt py-3 text-sm font-semibold text-white"
-		>
-			{editing ? 'Save Changes' : 'Create Debt'}
-		</button>
-		{#if editing}
 			<button
-				type="button"
-				onclick={() => {
-					showForm = false;
-					remove(editing!.id);
-				}}
-				class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-debt"
+				type="submit"
+				onclick={save}
+				class="mt-5 w-full rounded-lg bg-debt py-3 text-sm font-semibold text-white"
 			>
-				Delete Debt
+				{editing ? 'Save Changes' : 'Create Debt'}
 			</button>
+			{#if editing}
+				<button
+					type="button"
+					onclick={() => (confirmDelete = true)}
+					class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-debt"
+				>
+					Delete Debt
+				</button>
+			{/if}
 		{/if}
 	</BottomSheet>
 {/if}

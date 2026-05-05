@@ -2,27 +2,55 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import IncomeRow from '$lib/components/income/IncomeRow.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
 
 	let { data } = $props();
-	type Income = (typeof data.incomeItems)[number];
+	type Income = (typeof data.incomeItems)[number] & { starting_month?: string | null };
 
 	let showForm = $state(false);
 	let editing = $state<Income | null>(null);
+	let confirmDelete = $state(false);
 	let form = $state({
 		name: '',
 		amount: '',
 		recurrence: 'monthly',
 		day_of_month: '',
 		expected_date: '',
+		starting_month: '',
 		received: false
 	});
 
-	const recurrences = ['once', 'weekly', 'biweekly', 'monthly', 'yearly'];
+	const recurrences = [
+		'once',
+		'weekly',
+		'biweekly',
+		'monthly',
+		'quarterly',
+		'half-yearly',
+		'yearly'
+	];
+	const months = [
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December'
+	];
 	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+		new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
+
+	const needsMonth = $derived(['quarterly', 'half-yearly', 'yearly'].includes(form.recurrence));
+	const isOnce = $derived(form.recurrence === 'once');
 
 	const monthlyTotal = $derived(
 		data.incomeItems
@@ -37,12 +65,14 @@
 
 	function openNew() {
 		editing = null;
+		confirmDelete = false;
 		form = {
 			name: '',
 			amount: '',
 			recurrence: 'monthly',
 			day_of_month: '',
 			expected_date: '',
+			starting_month: '',
 			received: false
 		};
 		showForm = true;
@@ -50,12 +80,14 @@
 
 	function openEdit(income: Income) {
 		editing = income;
+		confirmDelete = false;
 		form = {
 			name: income.name,
 			amount: String(income.amount),
 			recurrence: income.recurrence,
 			day_of_month: income.day_of_month ?? '',
 			expected_date: income.expected_date ?? '',
+			starting_month: income.starting_month ?? '',
 			received: income.received
 		};
 		showForm = true;
@@ -66,8 +98,9 @@
 			name: form.name,
 			amount: parseFloat(form.amount) || 0,
 			recurrence: form.recurrence,
-			day_of_month: form.recurrence !== 'once' ? form.day_of_month || null : null,
-			expected_date: form.recurrence === 'once' ? form.expected_date || null : null,
+			day_of_month: !isOnce ? form.day_of_month || null : null,
+			expected_date: isOnce ? form.expected_date || null : null,
+			starting_month: needsMonth ? form.starting_month || null : null,
 			received: form.received
 		};
 		if (editing) {
@@ -79,9 +112,9 @@
 		await invalidateAll();
 	}
 
-	async function remove(id: string) {
-		if (!confirm('Delete this income?')) return;
-		await supabase.from('income').delete().eq('id', id);
+	async function remove() {
+		await supabase.from('income').delete().eq('id', editing!.id);
+		showForm = false;
 		await invalidateAll();
 	}
 </script>
@@ -130,75 +163,116 @@
 
 {#if showForm}
 	<BottomSheet bind:open={showForm} title={editing ? 'Edit Income' : 'New Income'}>
-		<div class="space-y-3">
-			<div>
-				<label for="inc-name" class="mb-1 block text-xs font-medium text-neutral">Name</label>
-				<input id="inc-name" bind:value={form.name} class="input" placeholder="e.g. Salary" />
-			</div>
-			<div class="grid grid-cols-2 gap-3">
-				<div>
-					<label for="inc-amount" class="mb-1 block text-xs font-medium text-neutral">Amount</label>
-					<input
-						id="inc-amount"
-						bind:value={form.amount}
-						type="number"
-						step="0.01"
-						class="input"
-						placeholder="0.00"
-					/>
+		{#if confirmDelete}
+			<div class="space-y-4 py-2">
+				<div class="rounded-xl bg-surface-muted px-4 py-4 text-center">
+					<p class="text-sm font-medium">Delete "{editing?.name}"?</p>
+					<p class="mt-1 text-xs text-neutral">This can't be undone.</p>
 				</div>
-				<div>
-					<label for="inc-recurrence" class="mb-1 block text-xs font-medium text-neutral"
-						>Recurrence</label
-					>
-					<select id="inc-recurrence" bind:value={form.recurrence} class="input">
-						{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
-					</select>
-				</div>
+				<button
+					type="button"
+					onclick={remove}
+					class="w-full rounded-lg bg-income py-3 text-sm font-semibold text-white"
+				>
+					Yes, delete
+				</button>
+				<button
+					type="button"
+					onclick={() => (confirmDelete = false)}
+					class="w-full rounded-lg py-3 text-sm font-semibold text-neutral"
+				>
+					Cancel
+				</button>
 			</div>
-			<div>
-				{#if form.recurrence === 'once'}
-					<label for="inc-exp-date" class="mb-1 block text-xs font-medium text-neutral"
-						>Expected date (optional)</label
-					>
-					<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />
+		{:else}
+			<div class="space-y-3">
+				<div>
+					<label for="inc-name" class="mb-1 block text-xs font-medium text-neutral">Name</label>
+					<input id="inc-name" bind:value={form.name} class="input" placeholder="e.g. Salary" />
+				</div>
+				<div class="grid grid-cols-2 gap-3">
+					<div>
+						<label for="inc-amount" class="mb-1 block text-xs font-medium text-neutral"
+							>Amount</label
+						>
+						<input
+							id="inc-amount"
+							bind:value={form.amount}
+							type="number"
+							step="0.01"
+							class="input"
+							placeholder="0.00"
+						/>
+					</div>
+					<div>
+						<label for="inc-recurrence" class="mb-1 block text-xs font-medium text-neutral"
+							>Recurrence</label
+						>
+						<select id="inc-recurrence" bind:value={form.recurrence} class="input">
+							{#each recurrences as r (r)}<option value={r}>{r}</option>{/each}
+						</select>
+					</div>
+				</div>
+				{#if isOnce}
+					<div>
+						<label for="inc-exp-date" class="mb-1 block text-xs font-medium text-neutral"
+							>Expected date (optional)</label
+						>
+						<input id="inc-exp-date" bind:value={form.expected_date} type="date" class="input" />
+					</div>
 				{:else}
-					<label for="inc-dom" class="mb-1 block text-xs font-medium text-neutral"
-						>Day of month</label
-					>
-					<select id="inc-dom" bind:value={form.day_of_month} class="input">
-						<option value="">— select —</option>
-						{#each Array.from({ length: 28 }, (_, i) => i + 1) as d (d)}
-							<option value={String(d)}>{d}.</option>
-						{/each}
-						<option value="last_working">Last working day</option>
-						<option value="second_last_working">2nd-last working day</option>
-					</select>
+					<div class="grid grid-cols-2 gap-3">
+						<div>
+							<label for="inc-dom" class="mb-1 block text-xs font-medium text-neutral"
+								>Day of month</label
+							>
+							<select id="inc-dom" bind:value={form.day_of_month} class="input">
+								<option value="">— select —</option>
+								{#each Array.from({ length: 28 }, (_, i) => i + 1) as d (d)}
+									<option value={String(d)}>{d}.</option>
+								{/each}
+								<option value="last_working">Last working day</option>
+								<option value="second_last_working">2nd-last working day</option>
+							</select>
+						</div>
+						{#if needsMonth}
+							<div>
+								<label for="inc-month" class="mb-1 block text-xs font-medium text-neutral"
+									>Starting month</label
+								>
+								<select id="inc-month" bind:value={form.starting_month} class="input">
+									<option value="">— select —</option>
+									{#each months as m, i (m)}
+										<option value={String(i + 1)}>{m}</option>
+									{/each}
+								</select>
+							</div>
+						{/if}
+					</div>
 				{/if}
+				<Toggle
+					bind:checked={form.received}
+					label="Already received"
+					id="inc-received"
+					color="var(--color-income)"
+				/>
 			</div>
-			<label class="flex items-center gap-2 text-sm">
-				<input bind:checked={form.received} type="checkbox" class="h-4 w-4 rounded" />
-				Already received
-			</label>
-		</div>
-		<button
-			type="submit"
-			onclick={save}
-			class="mt-5 w-full rounded-lg bg-income py-3 text-sm font-semibold text-white"
-		>
-			{editing ? 'Save Changes' : 'Create Income'}
-		</button>
-		{#if editing}
 			<button
-				type="button"
-				onclick={() => {
-					showForm = false;
-					remove(editing!.id);
-				}}
-				class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-income"
+				type="submit"
+				onclick={save}
+				class="mt-5 w-full rounded-lg bg-income py-3 text-sm font-semibold text-white"
 			>
-				Delete Income
+				{editing ? 'Save Changes' : 'Create Income'}
 			</button>
+			{#if editing}
+				<button
+					type="button"
+					onclick={() => (confirmDelete = true)}
+					class="mt-2 w-full rounded-lg py-3 text-sm font-semibold text-income"
+				>
+					Delete Income
+				</button>
+			{/if}
 		{/if}
 	</BottomSheet>
 {/if}
