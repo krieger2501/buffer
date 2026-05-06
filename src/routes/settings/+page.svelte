@@ -17,7 +17,7 @@
 </script>
 
 <div class="px-4 pt-4 pb-6">
-	<PageHeader title="Settings" />
+	<PageHeader title="Settings" user={data.user} displayName={data.settings.displayName} />
 
 	<form method="POST" action="?/save" use:enhance class="flex flex-col gap-4">
 		<Card>

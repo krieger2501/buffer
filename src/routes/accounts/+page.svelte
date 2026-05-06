@@ -2,6 +2,7 @@
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import AccountRow from '$lib/components/accounts/AccountRow.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
+	import Toggle from '$lib/components/ui/Toggle.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -12,6 +13,7 @@
 
 	let showForm = $state(false);
 	let editing = $state<Account | null>(null);
+	let confirmDelete = $state(false);
 	let form = $state({
 		name: '',
 		type: 'checking',
@@ -24,7 +26,7 @@
 	const accountTypes = ['checking', 'savings', 'crypto', 'investment', 'cash', 'other'];
 	const currencies = ['EUR', 'USD', 'GBP', 'CHF', 'BTC', 'ETH'];
 	const fmt = (n: number) =>
-		new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+		new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 
 	const totalBalance = $derived(data.accounts.reduce((s: number, a: Account) => s + a.balance, 0));
 	const liquidBalance = $derived(
@@ -35,6 +37,7 @@
 
 	function openNew() {
 		editing = null;
+		confirmDelete = false;
 		form = {
 			name: '',
 			type: 'checking',
@@ -48,6 +51,7 @@
 
 	function openEdit(account: Account) {
 		editing = account;
+		confirmDelete = false;
 		form = {
 			name: account.name,
 			type: account.type,
@@ -77,16 +81,16 @@
 		await invalidateAll();
 	}
 
-	async function remove(id: string) {
-		if (!confirm('Delete this account?')) return;
-		await supabase.from('accounts').delete().eq('id', id);
+	async function remove() {
+		await supabase.from('accounts').delete().eq('id', editing!.id);
+		showForm = false;
 		await invalidateAll();
 	}
 </script>
 
 <div class="pb-6">
 	<div class="px-4 pt-4">
-		<PageHeader title="Accounts">
+		<PageHeader title="Accounts" user={data.user} displayName={data.settings.displayName}>
 			{#snippet actions()}
 				<button
 					type="button"
@@ -116,15 +120,7 @@
 
 	<div class="space-y-2 px-4">
 		{#each data.accounts as account (account.id)}
-			<div class="relative">
-				<AccountRow {account} onEdit={openEdit} />
-				<button
-					type="button"
-					onclick={() => remove(account.id)}
-					class="absolute top-1/2 right-14 -translate-y-1/2 rounded p-1 text-xs text-[var(--color-neutral)] hover:text-[var(--color-expense)]"
-					aria-label="Delete">✕</button
-				>
-			</div>
+			<AccountRow {account} onEdit={openEdit} />
 		{/each}
 		{#if data.accounts.length === 0}
 			<div
@@ -138,57 +134,96 @@
 
 {#if showForm}
 	<BottomSheet bind:open={showForm} title={editing ? 'Edit Account' : 'New Account'}>
-		<div class="space-y-3">
-			<div>
-				<label for="acc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Name</label
+		{#if confirmDelete}
+			<div class="space-y-4 py-2">
+				<div class="rounded-xl bg-[var(--color-surface-muted)] px-4 py-4 text-center">
+					<p class="text-sm font-medium">Delete "{editing?.name}"?</p>
+					<p class="mt-1 text-xs text-[var(--color-neutral)]">This can't be undone.</p>
+				</div>
+				<button
+					type="button"
+					onclick={remove}
+					class="w-full rounded-[var(--radius-lg)] bg-[var(--color-expense)] py-3 text-sm font-semibold text-white"
 				>
-				<input id="acc-name" bind:value={form.name} class="input" placeholder="e.g. N26 Checking" />
+					Yes, delete
+				</button>
+				<button
+					type="button"
+					onclick={() => (confirmDelete = false)}
+					class="w-full rounded-[var(--radius-lg)] py-3 text-sm font-semibold text-[var(--color-neutral)]"
+				>
+					Cancel
+				</button>
 			</div>
-			<div class="grid grid-cols-2 gap-3">
+		{:else}
+			<div class="space-y-3">
 				<div>
-					<label for="acc-type" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-						>Type</label
+					<label for="acc-name" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+						>Name</label
 					>
-					<select id="acc-type" bind:value={form.type} class="input">
-						{#each accountTypes as t (t)}<option value={t}>{t}</option>{/each}
-					</select>
+					<input
+						id="acc-name"
+						bind:value={form.name}
+						class="input"
+						placeholder="e.g. N26 Checking"
+					/>
+				</div>
+				<div class="grid grid-cols-2 gap-3">
+					<div>
+						<label for="acc-type" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
+							>Type</label
+						>
+						<select id="acc-type" bind:value={form.type} class="input">
+							{#each accountTypes as t (t)}<option value={t}>{t}</option>{/each}
+						</select>
+					</div>
+					<div>
+						<label
+							for="acc-currency"
+							class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Currency</label
+						>
+						<select id="acc-currency" bind:value={form.currency} class="input">
+							{#each currencies as c (c)}<option value={c}>{c}</option>{/each}
+						</select>
+					</div>
 				</div>
 				<div>
 					<label
-						for="acc-currency"
-						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Currency</label
+						for="acc-balance"
+						class="mb-1 block text-xs font-medium text-[var(--color-neutral)]">Balance</label
 					>
-					<select id="acc-currency" bind:value={form.currency} class="input">
-						{#each currencies as c (c)}<option value={c}>{c}</option>{/each}
-					</select>
+					<input
+						id="acc-balance"
+						bind:value={form.balance}
+						type="number"
+						step="0.01"
+						class="input"
+						placeholder="0.00"
+					/>
 				</div>
-			</div>
-			<div>
-				<label for="acc-balance" class="mb-1 block text-xs font-medium text-[var(--color-neutral)]"
-					>Balance</label
-				>
-				<input
-					id="acc-balance"
-					bind:value={form.balance}
-					type="number"
-					step="0.01"
-					class="input"
-					placeholder="0.00"
+				<Toggle
+					bind:checked={form.include_in_total}
+					label="Include in liquid total"
+					id="acc-liquid"
 				/>
 			</div>
-			<label class="flex items-center gap-2 text-sm">
-				<input bind:checked={form.include_in_total} type="checkbox" class="h-4 w-4 rounded" />
-				Include in liquid total
-			</label>
-		</div>
-		<button
-			type="submit"
-			onclick={save}
-			class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-primary-500)] py-3 text-sm font-semibold text-white"
-		>
-			{editing ? 'Save Changes' : 'Create Account'}
-		</button>
+			<button
+				type="submit"
+				onclick={save}
+				class="mt-5 w-full rounded-[var(--radius-lg)] bg-[var(--color-primary-500)] py-3 text-sm font-semibold text-white"
+			>
+				{editing ? 'Save Changes' : 'Create Account'}
+			</button>
+			{#if editing}
+				<button
+					type="button"
+					onclick={() => (confirmDelete = true)}
+					class="mt-2 w-full rounded-[var(--radius-lg)] py-3 text-sm font-semibold text-[var(--color-expense)]"
+				>
+					Delete Account
+				</button>
+			{/if}
+		{/if}
 	</BottomSheet>
 {/if}
 

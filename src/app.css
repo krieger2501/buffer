@@ -100,9 +100,6 @@
 	}
 
 	body {
-		height: 100dvh;
-		overflow: hidden;
 		padding-top: env(safe-area-inset-top);
-		box-sizing: border-box;
 	}
 }

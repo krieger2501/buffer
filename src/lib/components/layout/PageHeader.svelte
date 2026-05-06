@@ -1,14 +1,24 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { User } from '@supabase/supabase-js';
+	import AccountMenu from './AccountMenu.svelte';
 
 	let {
 		title,
 		subtitle = '',
-		actions
-	}: { title: string; subtitle?: string; actions?: Snippet } = $props();
+		actions,
+		user = null,
+		displayName = null
+	}: {
+		title: string;
+		subtitle?: string;
+		actions?: Snippet;
+		user?: User | null;
+		displayName?: string | null;
+	} = $props();
 </script>
 
-<header class="mb-5 flex items-end justify-between">
+<header class="mb-5 flex items-center justify-between">
 	<div>
 		{#if subtitle}
 			<p class="mb-0.5 text-[11px] font-semibold tracking-widest text-neutral uppercase">
@@ -17,7 +27,12 @@
 		{/if}
 		<h1 class="text-2xl font-bold tracking-tight">{title}</h1>
 	</div>
-	{#if actions}
-		<div class="pr-12">{@render actions()}</div>
-	{/if}
+	<div class="flex items-center gap-2">
+		{#if actions}
+			{@render actions()}
+		{/if}
+		{#if user}
+			<AccountMenu {user} {displayName} />
+		{/if}
+	</div>
 </header>

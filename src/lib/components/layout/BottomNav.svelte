@@ -15,7 +15,7 @@
 </script>
 
 <nav
-	class="fixed right-0 bottom-0 left-0 z-50 flex min-h-(--bottom-nav-height) items-start
+	class="fixed right-0 bottom-0 left-0 z-50 flex min-h-(--bottom-nav-height) items-center
 	       justify-around border-t border-border bg-surface/95 px-1 backdrop-blur-md"
 	style="padding-bottom: env(safe-area-inset-bottom);"
 >
