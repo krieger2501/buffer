@@ -3,6 +3,7 @@
 	import ExpenseRow from '$lib/components/expenses/ExpenseRow.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -10,6 +11,7 @@
 	let { data } = $props();
 	type Expense = (typeof data.expenses)[number] & { starting_month?: string | null };
 
+	// ── Form state ───────────────────────────────────────────────────────────
 	let showForm = $state(false);
 	let editing = $state<Expense | null>(null);
 	let confirmDelete = $state(false);
@@ -25,6 +27,23 @@
 		paid: false
 	});
 
+	// ── Tab + sort/filter state ───────────────────────────────────────────────
+	type TabId = 'recurring' | 'once' | 'past';
+	let activeTab = $state<TabId>('recurring');
+	let sortBy = $state<'date' | 'amount'>('date');
+	let sortDir = $state<'asc' | 'desc'>('asc');
+	let filterStatus = $state<'all' | 'active' | 'paused'>('all');
+	let filterCategory = $state<string | null>(null);
+
+	function switchTab(id: string) {
+		activeTab = id as TabId;
+		sortBy = 'date';
+		sortDir = id === 'past' ? 'desc' : 'asc';
+		filterStatus = 'all';
+		filterCategory = null;
+	}
+
+	// ── Static config ─────────────────────────────────────────────────────────
 	const categories = [
 		'housing',
 		'utilities',
@@ -60,11 +79,17 @@
 	const fmt = (n: number) =>
 		new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 
+	// ── Derived partitions ────────────────────────────────────────────────────
 	const needsMonth = $derived(['quarterly', 'half-yearly', 'yearly'].includes(form.recurrence));
 	const isOnce = $derived(form.recurrence === 'once');
 
 	const recurringExpenses = $derived(data.expenses.filter((e: Expense) => e.recurrence !== 'once'));
-	const onceExpenses = $derived(data.expenses.filter((e: Expense) => e.recurrence === 'once'));
+	const onceExpenses = $derived(
+		data.expenses.filter((e: Expense) => e.recurrence === 'once' && e.active)
+	);
+	const pastExpenses = $derived(
+		data.expenses.filter((e: Expense) => e.recurrence === 'once' && !e.active)
+	);
 
 	const monthlyTotal = $derived(
 		recurringExpenses
@@ -72,6 +97,73 @@
 			.reduce((s: number, e: Expense) => s + e.amount, 0)
 	);
 
+	const tabCounts = $derived({
+		recurring: recurringExpenses.length,
+		once: onceExpenses.length,
+		past: pastExpenses.length
+	});
+
+	const expenseTabs = $derived([
+		{ id: 'recurring', label: 'Recurring', count: tabCounts.recurring },
+		{ id: 'once', label: 'One-time', count: tabCounts.once },
+		{ id: 'past', label: 'Past', count: tabCounts.past }
+	]);
+
+	const availableCategories = $derived(
+		[...new Set(onceExpenses.map((e: Expense) => e.category))].sort() as string[]
+	);
+
+	// ── Sort helpers ──────────────────────────────────────────────────────────
+	function dateVal(s: string | null, dir: 'asc' | 'desc'): number {
+		if (!s) return dir === 'asc' ? Infinity : -Infinity;
+		return new Date(s).getTime();
+	}
+
+	function pillClass(isActive: boolean): string {
+		return isActive
+			? 'shrink-0 rounded-full border border-expense bg-expense/10 px-3 py-1.5 text-xs font-medium text-expense transition-colors'
+			: 'shrink-0 rounded-full border border-border px-3 py-1.5 text-xs text-neutral transition-colors hover:border-expense/40';
+	}
+
+	// ── Derived views (with sort + filter applied) ────────────────────────────
+	const recurringView = $derived.by(() => {
+		let list = recurringExpenses.slice() as Expense[];
+		if (filterStatus === 'active') list = list.filter((e) => e.active);
+		if (filterStatus === 'paused') list = list.filter((e) => !e.active);
+		if (sortBy === 'amount') {
+			list.sort((a, b) => (sortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount));
+		} else {
+			list.sort((a, b) => (a.active === b.active ? 0 : a.active ? -1 : 1));
+		}
+		return list;
+	});
+
+	const onceView = $derived.by(() => {
+		let list = onceExpenses.slice() as Expense[];
+		if (filterCategory) list = list.filter((e) => e.category === filterCategory);
+		if (sortBy === 'amount') {
+			list.sort((a, b) => (sortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount));
+		} else {
+			list.sort((a, b) => dateVal(a.due_date, sortDir) - dateVal(b.due_date, sortDir));
+		}
+		return list;
+	});
+
+	const pastView = $derived.by(() => {
+		let list = pastExpenses.slice() as Expense[];
+		if (sortBy === 'amount') {
+			list.sort((a, b) => (sortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount));
+		} else {
+			list.sort((a, b) => {
+				const av = a.due_date ? new Date(a.due_date).getTime() : new Date(a.created_at).getTime();
+				const bv = b.due_date ? new Date(b.due_date).getTime() : new Date(b.created_at).getTime();
+				return sortDir === 'desc' ? bv - av : av - bv;
+			});
+		}
+		return list;
+	});
+
+	// ── Form handlers ─────────────────────────────────────────────────────────
 	function openNew() {
 		editing = null;
 		confirmDelete = false;
@@ -156,29 +248,185 @@
 		</div>
 	</div>
 
-	{#if recurringExpenses.length > 0}
-		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">Recurring</p>
-		<div class="mb-4 space-y-2 px-4">
-			{#each recurringExpenses as expense (expense.id)}
+	<div class="mb-3 px-4">
+		<Tabs tabs={expenseTabs} active={activeTab} onchange={switchTab} />
+	</div>
+
+	{#if activeTab === 'recurring'}
+		<div class="flex gap-2 overflow-x-auto px-4 pt-1 pb-2 [&::-webkit-scrollbar]:hidden">
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'asc')}
+			>
+				Cheapest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'desc')}
+			>
+				Most expensive
+			</button>
+			<span class="self-center text-xs text-border">|</span>
+			<button
+				type="button"
+				onclick={() => (filterStatus = 'all')}
+				class={pillClass(filterStatus === 'all')}
+			>
+				All
+			</button>
+			<button
+				type="button"
+				onclick={() => (filterStatus = 'active')}
+				class={pillClass(filterStatus === 'active')}
+			>
+				Active
+			</button>
+			<button
+				type="button"
+				onclick={() => (filterStatus = 'paused')}
+				class={pillClass(filterStatus === 'paused')}
+			>
+				Paused
+			</button>
+		</div>
+	{:else if activeTab === 'once'}
+		<div class="flex gap-2 overflow-x-auto px-4 pt-1 pb-2 [&::-webkit-scrollbar]:hidden">
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'asc')}
+			>
+				Soonest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'desc')}
+			>
+				Latest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'asc')}
+			>
+				Cheapest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'desc')}
+			>
+				Most expensive
+			</button>
+			{#if availableCategories.length > 1}
+				<span class="self-center text-xs text-border">|</span>
+				{#each availableCategories as cat (cat)}
+					<button
+						type="button"
+						onclick={() => (filterCategory = filterCategory === cat ? null : cat)}
+						class="{pillClass(filterCategory === cat)} capitalize"
+					>
+						{cat}
+					</button>
+				{/each}
+			{/if}
+		</div>
+	{:else if activeTab === 'past'}
+		<div class="flex gap-2 overflow-x-auto px-4 pt-1 pb-2 [&::-webkit-scrollbar]:hidden">
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'desc')}
+			>
+				Most recent
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'asc')}
+			>
+				Oldest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'desc')}
+			>
+				Highest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'asc')}
+			>
+				Lowest first
+			</button>
+		</div>
+	{/if}
+
+	<div class="mt-1 space-y-2 px-4">
+		{#if activeTab === 'recurring'}
+			{#each recurringView as expense (expense.id)}
 				<ExpenseRow {expense} onEdit={openEdit} />
 			{/each}
-		</div>
-	{/if}
-
-	{#if onceExpenses.length > 0}
-		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">One-time</p>
-		<div class="space-y-2 px-4">
-			{#each onceExpenses as expense (expense.id)}
+			{#if recurringView.length === 0}
+				<div class="rounded-xl border border-dashed border-border p-8 text-center">
+					<p class="text-sm text-neutral">No recurring expenses.</p>
+				</div>
+			{/if}
+		{:else if activeTab === 'once'}
+			{#each onceView as expense (expense.id)}
 				<ExpenseRow {expense} once={true} onEdit={openEdit} />
 			{/each}
-		</div>
-	{/if}
-
-	{#if data.expenses.length === 0}
-		<div class="mx-4 rounded-xl border border-dashed border-border p-8 text-center">
-			<p class="text-sm text-neutral">No expenses yet. Tap "Add" to create one.</p>
-		</div>
-	{/if}
+			{#if onceView.length === 0}
+				<div class="rounded-xl border border-dashed border-border p-8 text-center">
+					<p class="text-sm text-neutral">No upcoming one-time expenses.</p>
+				</div>
+			{/if}
+		{:else if activeTab === 'past'}
+			{#each pastView as expense (expense.id)}
+				<ExpenseRow {expense} once={true} onEdit={openEdit} />
+			{/each}
+			{#if pastView.length === 0}
+				<div class="rounded-xl border border-dashed border-border p-8 text-center">
+					<p class="text-sm text-neutral">Paid expenses will appear here.</p>
+				</div>
+			{/if}
+		{/if}
+	</div>
 </div>
 
 {#if showForm}

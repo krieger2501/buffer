@@ -3,6 +3,7 @@
 	import IncomeRow from '$lib/components/income/IncomeRow.svelte';
 	import BottomSheet from '$lib/components/layout/BottomSheet.svelte';
 	import Toggle from '$lib/components/ui/Toggle.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { Plus } from 'lucide-svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { supabase } from '$lib/supabaseClient';
@@ -10,6 +11,7 @@
 	let { data } = $props();
 	type Income = (typeof data.incomeItems)[number] & { starting_month?: string | null };
 
+	// ── Form state ───────────────────────────────────────────────────────────
 	let showForm = $state(false);
 	let editing = $state<Income | null>(null);
 	let confirmDelete = $state(false);
@@ -23,6 +25,19 @@
 		received: false
 	});
 
+	// ── Tab + sort state ──────────────────────────────────────────────────────
+	type TabId = 'recurring' | 'once' | 'past';
+	let activeTab = $state<TabId>('recurring');
+	let sortBy = $state<'date' | 'amount'>('date');
+	let sortDir = $state<'asc' | 'desc'>('asc');
+
+	function switchTab(id: string) {
+		activeTab = id as TabId;
+		sortBy = 'date';
+		sortDir = id === 'past' ? 'desc' : 'asc';
+	}
+
+	// ── Static config ─────────────────────────────────────────────────────────
 	const recurrences = [
 		'once',
 		'weekly',
@@ -49,11 +64,17 @@
 	const fmt = (n: number) =>
 		new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 
+	// ── Derived partitions ────────────────────────────────────────────────────
 	const needsMonth = $derived(['quarterly', 'half-yearly', 'yearly'].includes(form.recurrence));
 	const isOnce = $derived(form.recurrence === 'once');
 
 	const recurringIncome = $derived(data.incomeItems.filter((i: Income) => i.recurrence !== 'once'));
-	const onceIncome = $derived(data.incomeItems.filter((i: Income) => i.recurrence === 'once'));
+	const onceIncome = $derived(
+		data.incomeItems.filter((i: Income) => i.recurrence === 'once' && !i.received)
+	);
+	const pastIncome = $derived(
+		data.incomeItems.filter((i: Income) => i.recurrence === 'once' && i.received)
+	);
 
 	const monthlyTotal = $derived(
 		recurringIncome
@@ -66,6 +87,68 @@
 			.reduce((s: number, i: Income) => s + i.amount, 0)
 	);
 
+	const tabCounts = $derived({
+		recurring: recurringIncome.length,
+		once: onceIncome.length,
+		past: pastIncome.length
+	});
+
+	const incomeTabs = $derived([
+		{ id: 'recurring', label: 'Recurring', count: tabCounts.recurring },
+		{ id: 'once', label: 'One-time', count: tabCounts.once },
+		{ id: 'past', label: 'Past', count: tabCounts.past }
+	]);
+
+	// ── Sort helpers ──────────────────────────────────────────────────────────
+	function dateVal(s: string | null, dir: 'asc' | 'desc'): number {
+		if (!s) return dir === 'asc' ? Infinity : -Infinity;
+		return new Date(s).getTime();
+	}
+
+	function pillClass(isActive: boolean): string {
+		return isActive
+			? 'shrink-0 rounded-full border border-income bg-income/10 px-3 py-1.5 text-xs font-medium text-income transition-colors'
+			: 'shrink-0 rounded-full border border-border px-3 py-1.5 text-xs text-neutral transition-colors hover:border-income/40';
+	}
+
+	// ── Derived views ─────────────────────────────────────────────────────────
+	const recurringView = $derived.by(() => {
+		const list = recurringIncome.slice() as Income[];
+		if (sortBy === 'amount') {
+			list.sort((a, b) => (sortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount));
+		}
+		return list;
+	});
+
+	const onceView = $derived.by(() => {
+		const list = onceIncome.slice() as Income[];
+		if (sortBy === 'amount') {
+			list.sort((a, b) => (sortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount));
+		} else {
+			list.sort((a, b) => dateVal(a.expected_date, sortDir) - dateVal(b.expected_date, sortDir));
+		}
+		return list;
+	});
+
+	const pastView = $derived.by(() => {
+		const list = pastIncome.slice() as Income[];
+		if (sortBy === 'amount') {
+			list.sort((a, b) => (sortDir === 'asc' ? a.amount - b.amount : b.amount - a.amount));
+		} else {
+			list.sort((a, b) => {
+				const av = a.expected_date
+					? new Date(a.expected_date).getTime()
+					: new Date(a.created_at).getTime();
+				const bv = b.expected_date
+					? new Date(b.expected_date).getTime()
+					: new Date(b.created_at).getTime();
+				return sortDir === 'desc' ? bv - av : av - bv;
+			});
+		}
+		return list;
+	});
+
+	// ── Form handlers ─────────────────────────────────────────────────────────
 	function openNew() {
 		editing = null;
 		confirmDelete = false;
@@ -152,29 +235,151 @@
 		</div>
 	</div>
 
-	{#if recurringIncome.length > 0}
-		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">Recurring</p>
-		<div class="mb-4 space-y-2 px-4">
-			{#each recurringIncome as income (income.id)}
+	<div class="mb-3 px-4">
+		<Tabs tabs={incomeTabs} active={activeTab} onchange={switchTab} />
+	</div>
+
+	{#if activeTab === 'recurring'}
+		<div class="flex gap-2 overflow-x-auto px-4 pt-1 pb-2 [&::-webkit-scrollbar]:hidden">
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'asc')}
+			>
+				Cheapest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'desc')}
+			>
+				Highest first
+			</button>
+		</div>
+	{:else if activeTab === 'once'}
+		<div class="flex gap-2 overflow-x-auto px-4 pt-1 pb-2 [&::-webkit-scrollbar]:hidden">
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'asc')}
+			>
+				Soonest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'desc')}
+			>
+				Latest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'asc')}
+			>
+				Cheapest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'desc')}
+			>
+				Highest first
+			</button>
+		</div>
+	{:else if activeTab === 'past'}
+		<div class="flex gap-2 overflow-x-auto px-4 pt-1 pb-2 [&::-webkit-scrollbar]:hidden">
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'desc')}
+			>
+				Most recent
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'date';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'date' && sortDir === 'asc')}
+			>
+				Oldest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'desc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'desc')}
+			>
+				Highest first
+			</button>
+			<button
+				type="button"
+				onclick={() => {
+					sortBy = 'amount';
+					sortDir = 'asc';
+				}}
+				class={pillClass(sortBy === 'amount' && sortDir === 'asc')}
+			>
+				Lowest first
+			</button>
+		</div>
+	{/if}
+
+	<div class="mt-1 space-y-2 px-4">
+		{#if activeTab === 'recurring'}
+			{#each recurringView as income (income.id)}
 				<IncomeRow {income} onEdit={openEdit} />
 			{/each}
-		</div>
-	{/if}
-
-	{#if onceIncome.length > 0}
-		<p class="mb-2 px-4 text-xs font-semibold tracking-widest text-neutral uppercase">One-time</p>
-		<div class="space-y-2 px-4">
-			{#each onceIncome as income (income.id)}
+			{#if recurringView.length === 0}
+				<div class="rounded-xl border border-dashed border-border p-8 text-center">
+					<p class="text-sm text-neutral">No recurring income.</p>
+				</div>
+			{/if}
+		{:else if activeTab === 'once'}
+			{#each onceView as income (income.id)}
 				<IncomeRow {income} once={true} onEdit={openEdit} />
 			{/each}
-		</div>
-	{/if}
-
-	{#if data.incomeItems.length === 0}
-		<div class="mx-4 rounded-xl border border-dashed border-border p-8 text-center">
-			<p class="text-sm text-neutral">No income tracked yet. Tap "Add" to create one.</p>
-		</div>
-	{/if}
+			{#if onceView.length === 0}
+				<div class="rounded-xl border border-dashed border-border p-8 text-center">
+					<p class="text-sm text-neutral">No upcoming one-time income.</p>
+				</div>
+			{/if}
+		{:else if activeTab === 'past'}
+			{#each pastView as income (income.id)}
+				<IncomeRow {income} once={true} onEdit={openEdit} />
+			{/each}
+			{#if pastView.length === 0}
+				<div class="rounded-xl border border-dashed border-border p-8 text-center">
+					<p class="text-sm text-neutral">Received income will appear here.</p>
+				</div>
+			{/if}
+		{/if}
+	</div>
 </div>
 
 {#if showForm}
